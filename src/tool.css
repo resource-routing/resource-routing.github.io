@@ -1,0 +1,107 @@
+body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+h1, h2 {
+    margin: 0.5rem;
+    display: inline-block;
+}
+
+button {
+    margin: 0 0.2rem;
+}
+
+hr {
+    margin: 0;
+}
+
+table {
+    margin: 2rem;
+    border: 1px black solid;
+    width: calc(100% - 4rem);
+}
+
+td {
+    border: 1px black solid;
+}
+
+.float-right {
+    float: right;
+}
+
+#div_header {
+    padding: 0.5rem;
+    height: 2rem;
+    box-sizing: border;
+}
+
+#div_nav {
+    border-right: 1px black solid;
+    border-bottom: 1px black solid;
+    width: 30%;
+    height: calc(99% - 3.5rem);
+    overflow: auto;
+    float: left;
+}
+#div_nav.nav-collapsed{
+    display:none;
+}
+
+#div_main {
+    width: 69%;
+    height: calc(99% - 3.5rem);
+    float: right;
+
+}
+#div_main.nav-collapsed{
+    width:100%;
+}
+
+#div_split_header {
+    height: 3rem;
+}
+
+#div_split_action {
+   height: 40%;
+   border: 1px black solid;
+   overflow: auto;
+}
+#div_split_action.resource-collapsed {
+   height: calc(99% - 6rem);
+}
+
+#div_resource {
+   margin-top:1rem;
+   border: 1px black solid;
+   height: calc(59% - 4rem);
+   overflow: auto;
+}
+#div_resource.resource-collapsed{
+   height: 3rem;
+}
+
+.link {
+    color: blue;
+    cursor: pointer;
+}
+
+.text-space-left{
+    margin-left:1rem;
+}
+.text-space-top{
+    margin-top:0.5rem;
+}
+
+.cell-button {
+    width: 10%;
+}
+
+#resource_filter {
+    width: 40%;
+}
+
+.align-right{
+    text-align: right;
+}
