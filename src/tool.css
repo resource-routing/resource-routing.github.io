@@ -50,7 +50,7 @@ td {
     display:none;
 }
 
-#div_main {
+#div_main{
     width: 69%;
     height: calc(99% - 3.5rem);
     float: right;
@@ -58,6 +58,9 @@ td {
 }
 #div_main.nav-collapsed{
     width:100%;
+}
+#div_split{
+	height:100%;
 }
 
 #div_split_header {

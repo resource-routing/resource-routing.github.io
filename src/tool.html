@@ -1,15 +1,16 @@
 <!DOCTYPE html>
 <head>
-    <title>Routing Resource Tracker</title>
+    <title>Resource Routing Tool</title>
 	<link type="text/css" rel="stylesheet" href="tool.css"/>
 </head>
 <body>
     <div id="div_header">
-		<button id="button_side_hide">Collapse Navigation</button>
-        <button id="button_import">Import</button>
-        <button id="button_export">Export</button>
-        <button id="button_help">Help</button>
-        <button class="float-right" id="button_reset">Reset</button>
+		<button id="button_side_hide"></button>
+        <button id="button_import" disabled>Import</button>
+        <button id="button_export" disabled>Export</button>
+        <button id="button_help"></button>
+		<span id="info">Info</span>
+        <button class="float-right" id="button_reset" disabled>Reset</button>
     </div>
     <hr/>
     <div id="div_nav">
@@ -34,8 +35,13 @@
             <li><button id="button_new_branch">New Branch</button></li>
         </ol>
     </div>
+	
     <div id="div_main">
-        <div id="div_split_header">
+		<div id="div_help" style="display:none">
+			<h3>Help</h3>
+		</div>
+		<div id="div_split">
+		    <div id="div_split_header">
             <h2 id="split_name_header">Some Branch > Some Split</h2>
             <button id="button_next_split">Next Split</button>
             <button id="button_previous_split">Previous Split</button>
@@ -106,6 +112,8 @@
 				</table>
 			</div>
 		</div>
+		</div>
+        
     </div>
 	<script src="tool.js"></script>
 </body>
