@@ -1,14 +1,11 @@
-deploy: build/index.html
-	cp build/index.html .
+build/tool.min.html: build/tool.packaged.html
+	minify build/tool.packaged.html > build/tool.min.html
 
-build/index.html: src/tool.html build/tool.min.css build/tool.min.js
+build/tool.packaged.html: src/tool.html src/tool.css src/tool.js
 	py ./package.py
 
-build/tool.min.js: src/tool.js
-	minify src/tool.js > build/tool.min.js
-	
-build/tool.min.css: src/tool.css
-	minify src/tool.css > build/tool.min.css
+deploy: build/tool.min.html
+	cp -T build/tool.min.html index.html
 
 clean:
 	rm -f build/**

@@ -5,10 +5,10 @@
 </head>
 <body>
     <div id="div_header">
+		<button id="button_side_hide">Collapse Navigation</button>
         <button id="button_import">Import</button>
         <button id="button_export">Export</button>
         <button id="button_help">Help</button>
-        <button id="button_side_hide">Collapse Navigation</button>
         <button class="float-right" id="button_reset">Reset</button>
     </div>
     <hr/>
@@ -40,73 +40,72 @@
             <button id="button_next_split">Next Split</button>
             <button id="button_previous_split">Previous Split</button>
         </div>
-        <div>
-            <div id="div_split_action">
-                <table>
-                    <tr>
-                        <th>
-                            Action
-                        </th>
-                        <th>
-                            Resource Delta
-                        </th>
-                    </tr>
-                    <tr>
-                        <td><span class="link"><u>Some Action</u></span></td>
-                        <td>resource resource resource resource resource resource resource</td>
-                        <td class="cell-button">
-                        <button id="action_0_edit">Edit</button>
-                        <button id="action_0_up">UP</button>
-                        <button id="action_0_down">DOWN</button>
-                        <button id="action_0_delete">DELETE</button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td colspan="2"><span><i>Some Notes (no resource hahahahahahah)</i></span></td>
-                        <td class="cell-button">
-                        <button id="action_0_edit">Edit</button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                        <button id="button_new_action">Add Action/Notes</button>
-                        </td>
-                    </tr>
-                    
+        
+		<div id="div_split_action">
+			<table>
+				<tr>
+					<th>
+						Action
+					</th>
+					<th>
+						Resource Delta
+					</th>
+				</tr>
+				<tr>
+					<td><span class="link"><u>Some Action</u></span></td>
+					<td>resource resource resource resource resource resource resource</td>
+					<td class="cell-button">
+					<button id="action_0_edit">Edit</button>
+					<button id="action_0_up">UP</button>
+					<button id="action_0_down">DOWN</button>
+					<button id="action_0_delete">DELETE</button>
+					</td>
+				</tr>
+				<tr>
+					<td colspan="2"><span><i>Some Notes (no resource hahahahahahah)</i></span></td>
+					<td class="cell-button">
+					<button id="action_0_edit">Edit</button>
+					</td>
+				</tr>
+				<tr>
+					<td>
+					<button id="button_new_action">Add Action/Notes</button>
+					</td>
+				</tr>
+				
 
-                </table>
-            </div>
-            <div id="div_resource">
-                <h2>Resources: Some Action</h2>
-                <button id="button_resource_hide">Collapse</button>
+			</table>
+		</div>
+		<div id="div_resource">
+			<h2>Resources: Some Action</h2>
+			<button id="button_resource_hide">Collapse</button>
 
-                <div id="div_resource_content">
-                    <div>
-                        <input id="resource_show_before" type="radio" name="resource_choice" value="before"/>
-                        <label for="resource_show_before">Show Resourses Before Action</label> 
-                        <input id="resource_show_after" type="radio" name="resource_choice" value="after"/>
-                        <label for="resource_show_after">Show Resources After Action</label> 
-                        <input id="resource_only_delta" type="checkbox"/>
-                        <label for="resource_only_delta">Only Show Changed</label> 
-                    </div>
-                    <div class="text-space-top">
-                        <label class="text-space-left" for="resource_filter">Filter:</label> 
-                        <input id="resource_filter" type="text" placeholder="Enter resource to filter"/>
-                        <button id="resource_filter_clear">Clear</button>
-                    </div>
-                    <table>
-                        <tr>
-                            <th>Name</th>
-                            <th>Quantity</th>
-                        </tr>
-                        <tr>
-                            <td>Some Resource</td>
-                            <td class="align-right">100</td>
-                        </tr>
-                    </table>
-                </div>
-            </div>
-        </div>    
+			<div id="div_resource_content">
+				<div>
+					<input id="resource_show_before" type="radio" name="resource_choice" value="before"/>
+					<label for="resource_show_before">Show Resourses Before Action</label> 
+					<input id="resource_show_after" type="radio" name="resource_choice" value="after"/>
+					<label for="resource_show_after">Show Resources After Action</label> 
+					<input id="resource_only_delta" type="checkbox"/>
+					<label for="resource_only_delta">Only Show Changed</label> 
+				</div>
+				<div class="text-space-top">
+					<label class="text-space-left" for="resource_filter">Filter:</label> 
+					<input id="resource_filter" type="text" placeholder="Enter resource to filter"/>
+					<button id="resource_filter_clear">Clear</button>
+				</div>
+				<table>
+					<tr>
+						<th>Name</th>
+						<th>Quantity</th>
+					</tr>
+					<tr>
+						<td>Some Resource</td>
+						<td class="align-right">100</td>
+					</tr>
+				</table>
+			</div>
+		</div>
     </div>
 	<script src="tool.js"></script>
 </body>
