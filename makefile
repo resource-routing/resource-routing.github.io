@@ -1,6 +1,6 @@
 deploy: 
-	rm -rf deployment/**
-	cp -r build/** deployment
+	rm -rf docs/**
+	cp -r build/** docs
 
 clean:
 	rm -rf build
