@@ -1,10 +1,8 @@
-build: 
-	npm run build
-
-deploy: build/tool.min.html
-	cp -T build/tool.min.html index.html
+deploy: 
+	rm -rf deployment/**
+	cp -r build/** deployment
 
 clean:
-	rm -f build/**
+	rm -rf build
 	
 
