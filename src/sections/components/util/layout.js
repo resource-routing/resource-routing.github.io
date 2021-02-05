@@ -11,13 +11,13 @@ export function max(a, b) {
 }
 
 
-export default function layout(sideCollapsed, resourceCollapsed) {
+export default function layout(sideCollapsed, resourceCollapsed, headerCollapsed) {
 	//const resourceCollapsed = false;
 	// const sideCollapsed = true;
 
 	const windowWidth = "100vw";
 	const windowHeight = "100vh";
-	const HEADER_HEIGHT = "3rem";
+	const HEADER_HEIGHT = "3.5rem";
 	const FOOTER_HEIGHT = "2rem";
 
 	const SIDE_MIN_WIDTH = "16rem";
@@ -33,19 +33,22 @@ export default function layout(sideCollapsed, resourceCollapsed) {
 
 	const RESOURCE_COLLAPSE_HEIGHT = "1.8rem";
 
-	const ACTION_WIDTH = "50rem";
+	const ACTION_MIN_WIDTH = "50rem";
+
 
 	const centerHeight = calc(windowHeight, "-", HEADER_HEIGHT, "-", FOOTER_HEIGHT);
 	const sideWidth = sideCollapsed ? SIDE_COLLAPSE_WIDTH : max(SIDE_MIN_WIDTH, min(SIDE_MAX_WIDTH, SIDE_WIDTH));
 	const mainWidth = calc(windowWidth, "-", sideWidth);
 	const resourceHeight = resourceCollapsed ? RESOURCE_COLLAPSE_HEIGHT : max(RESOURCE_MIN_HEIGHT, RESOURCE_HEIGHT);
 	const mapHeight = calc(centerHeight, "-", resourceHeight);
+	const actionWidth = min(mainWidth, max(ACTION_MIN_WIDTH, calc("60%", "-", sideWidth)));
+	const actionY = calc(windowHeight, "-", FOOTER_HEIGHT, "-", resourceHeight);
 
 	return {
 		header: {
 			x: 0,
 			y: 0,
-			w: windowWidth,
+			w: headerCollapsed ? sideWidth : windowWidth,
 			h: HEADER_HEIGHT,
 		},
 		side: {
@@ -63,7 +66,7 @@ export default function layout(sideCollapsed, resourceCollapsed) {
 				x: 0,
 				y: SIDE_HEADER_HEIGHT,
 				w: "100%",
-				h: calc(centerHeight, "-", SIDE_HEADER_HEIGHT),
+				h: calc("100%", "-", SIDE_HEADER_HEIGHT),
 			},
 		},
 		footer: {
@@ -73,22 +76,34 @@ export default function layout(sideCollapsed, resourceCollapsed) {
 			h: FOOTER_HEIGHT,
 		},
 		resources: {
-			x: calc(sideWidth, "+", ACTION_WIDTH),
-			y: calc(windowHeight, "-", FOOTER_HEIGHT, "-", resourceHeight),
-			w: ACTION_WIDTH,
+			x: calc(sideWidth, "+", actionWidth),
+			y: actionY,
+			w: calc(mainWidth, "-", actionWidth),
 			h: resourceHeight
 		},
 		actions: {
 			x: sideWidth,
-			y: calc(windowHeight, "-", FOOTER_HEIGHT, "-", resourceHeight),
-			w: ACTION_WIDTH,
-			h: resourceHeight
+			y: actionY,
+			w: actionWidth,
+			h: resourceHeight,
+			header: {
+				x: 0,
+				y: 0,
+				w: "100%",
+				h: SIDE_HEADER_HEIGHT,
+			},
+			main: {
+				x: 0,
+				y: SIDE_HEADER_HEIGHT,
+				w: "100%",
+				h: calc("100%", "-", SIDE_HEADER_HEIGHT),
+			},
 		},
 		map: {
 			x: sideWidth,
-			y: HEADER_HEIGHT,
+			y: headerCollapsed ? 0 : HEADER_HEIGHT,
 			w: mainWidth,
-			h: mapHeight
+			h: headerCollapsed ? calc(windowHeight, "-", FOOTER_HEIGHT, "-", resourceHeight) : mapHeight,
 		},
 
 	}

@@ -52,16 +52,24 @@ input.full-width {
 .space-left-small{
   margin-left:0.5rem;
 }
+.space-left-large{
+  margin-left:15rem;
+}
 
 table {
   width:100%;
 }
 
-h1 {
+h3 {
   margin: 0 0.5rem;
-  display: inline;
+  /* float:left; */
 }
 
 iframe{
   border:none;
+}
+
+.split-link{
+  color: blue;
+  cursor: pointer;
 }

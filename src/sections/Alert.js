@@ -1,6 +1,6 @@
-import Box from "./Box";
+import Box from "./components/Box";
 
-import { calc } from "./layout";
+import { calc } from "./components/util/layout";
 export default function Alert({ enabled, text, okText, cancelText, onOk, onCancel }) {
 	if (!enabled) {
 		return null;

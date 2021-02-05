@@ -1,6 +1,7 @@
 import React from "react";
-import Box from "./Box";
-import BranchList from "./components/branch/BranchList";
+import Box from "./components/Box";
+import BranchList from "./components/BranchList";
+import { collapseAll } from "./components/util/data";
 
 export default class SideNav extends React.Component {
 	constructor(props) {
@@ -18,8 +19,7 @@ export default class SideNav extends React.Component {
 		let buttonSection = (
 			<span>
 				<button className="space-left-small" onClick={() => this.setEditEnabled(!this.state.editing)}>{this.state.editing ? "Finish" : "Edit"}</button>
-				<button className="space-left-small" disabled >Collapse</button>
-				<button className="space-left-small" disabled>Expand</button>
+				<button className="space-left-small" onClick={() => this.props.actions.doToBranches(collapseAll(), "Collapsed all.")} >Collapse All</button>
 			</span>
 		);
 		let branchSection =

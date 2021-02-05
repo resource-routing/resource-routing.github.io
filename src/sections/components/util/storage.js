@@ -20,10 +20,10 @@ export function readFromFile(file, storedStateCallback) {
 }
 
 export function downloadToFile(state) {
-	const str = JSON.stringify(sanitizeState(state));
+	const str = JSON.stringify(minimize(state));
 	const blob = new Blob([str], { type: "text" });
 	const a = document.createElement('a');
-	const fileName = state.projectName + ".json" || "Resource_Routing.json";
+	const fileName = (state.projectName || "Resource_Routing") + ".json";
 	a.download = fileName
 	a.href = URL.createObjectURL(blob);
 	a.dataset.downloadurl = ["text", a.download, a.href].join(':');
@@ -44,7 +44,7 @@ export function readFromLocalStorage() {
 }
 
 export function saveToLocalStorage(state) {
-	const str = JSON.stringify(sanitizeState(state));
+	const str = JSON.stringify(minimize(state));
 	localStorage.setItem(KEY, str);
 }
 
@@ -52,12 +52,13 @@ export function clearLocalStorage() {
 	localStorage.removeItem(KEY);
 }
 
-function sanitizeState(state) {
+export function sanitizeState(state) {
 	if (!state) {
 		return {
 			projectName: "Untitled Project",
 			activeSplit: -1,
 			activeBranch: -1,
+			activeAction: -1,
 			branches: []
 		}
 	}
@@ -66,26 +67,34 @@ function sanitizeState(state) {
 	if (activeBranch === -1) {
 		activeSplit = -1;
 	} else {
-		activeSplit = sanitizeIndex(state.activeSplit, state.branches[state.activeBranch].splits);
+		activeSplit = sanitizeIndex(state.activeSplit, state.branches[activeBranch].splits);
+	}
+	let activeAction;
+	if (activeSplit === -1) {
+		activeAction = -1;
+	} else {
+		activeAction = sanitizeIndex(state.activeAction, state.branches[activeBranch].splits[activeSplit].actions.length);
 	}
 	return {
 		projectName: state.projectName || "Untitled Project",
 		activeBranch,
 		activeSplit,
+		activeAction,
 		branches: state.branches.map(sanitizeBranch)
 	}
 }
 
 function sanitizeIndex(i, array) {
+	if (i !== 0 && !i) return -1;
 	if (!array || !array.length) return -1;
 	if (i < 0) return -1;
-	if (i > array.length) return -1;
+	if (i >= array.length) return -1;
 	return i;
 }
 
-function sanitizeBranch(branch) {
+export function sanitizeBranch(branch) {
 	const template = {
-		name: "",
+		name: "Branch",
 		expanded: false,
 		splits: []
 	}
@@ -105,9 +114,9 @@ function sanitizeBranch(branch) {
 	return clean;
 }
 
-function sanitizeSplit(split) {
+export function sanitizeSplit(split) {
 	const template = {
-		name: "",
+		name: "Split",
 		expanded: false,
 		actions: []
 	}
@@ -127,10 +136,13 @@ function sanitizeSplit(split) {
 	return clean;
 }
 
-function sanitizeAction(action) {
+export function sanitizeAction(action) {
 	const template = {
-		name: "",
-		deltas: []
+		name: "Action",
+		expanded: false,
+		deltaString: "",
+		deltaError: false,
+		deltas: {},
 	}
 	if (!action) {
 		return { ...template };
@@ -139,12 +151,66 @@ function sanitizeAction(action) {
 	if (action.name) {
 		clean.name = action.name;
 	}
+	if (action.deltaString) {
+		clean.name = action.deltaString;
+	}
+	if (action.expanded) {
+		clean.expanded = true;
+	}
+	if (action.deltaError) {
+		clean.deltaError = true;
+	}
 	if (action.deltas) {
-		clean.deltas = action.deltas.map(sanitizeDelta)
+		clean.deltas = sanitizeDelta(action.deltas)
+	}
+	return clean;
+}
+
+export function sanitizeDelta(delta) {
+	const types = ["add", "set", "ref_add", "ref_set", "ref_sub"];
+	const copy = {};
+	for (const key in delta) {
+		const t = delta[key].type
+		if (t && types.includes(t)) {
+			if (t === "add" || t === "set") {
+				if (Number.isInteger(delta[key].value)) {
+					copy[key] = {
+						type: t,
+						value: delta[key].value,
+						create: delta[key].create ? true : false
+					}
+				}
+			} else {
+				copy[key] = {
+					type: t,
+					value: delta[key].value.toString(),
+					create: delta[key].create ? true : false
+				}
+			}
+		}
+	}
+	return copy;
+}
+
+function minimize(state) {
+	state = sanitizeState(state);
+	return {
+		...state,
+		branches: state.branches.map(branch => (
+			{
+				...branch,
+				splits: branch.splits.map(split => (
+					{
+						...split,
+						actions: split.actions.map(action => (
+							{
+								...action,
+								deltas: {}
+							}
+						))
+					}
+				))
+			}
+		))
 	}
 }
-
-function sanitizeDelta(delta) {
-	return {};
-}
-

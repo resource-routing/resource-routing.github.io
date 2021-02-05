@@ -1,5 +1,7 @@
 import Branch from "./Branch";
 
+import { createBranchAt } from './util/data';
+
 export default function BranchList({ branches, editing, actions }) {
 	if (!branches) return null;
 	return (
@@ -17,9 +19,12 @@ export default function BranchList({ branches, editing, actions }) {
 						splits={branch.splits}
 					/>
 				))}
-				<tr>
-					<td colSpan="3">
-						<button onClick={() => actions.createBranchAt(branches.length)}>New Branch</button>
+				<tr key="new_branch_button">
+					<td colSpan="5">
+						<button onClick={() => {
+							const len = branches.length;
+							actions.doToBranches(createBranchAt(len), "Branch created.", len);
+						}}>New Branch</button>
 					</td>
 				</tr>
 
