@@ -1,4 +1,4 @@
-
+import stringToDelta from "./actiondelta";
 const KEY = "RRT_STATE_v1"
 
 
@@ -9,9 +9,9 @@ export function readFromFile(file, storedStateCallback) {
 		reader.onloadend = () => {
 			const str = reader.result;
 			if (str) {
-				storedStateCallback(sanitizeState(JSON.parse(str)));
+				storedStateCallback(stringToState(JSON.parse(str)));
 			} else {
-				storedStateCallback(sanitizeState());
+				storedStateCallback(stringToState(""));
 			}
 		}
 		reader.readAsText(file);
@@ -37,9 +37,9 @@ export function downloadToFile(state) {
 export function readFromLocalStorage() {
 	const str = localStorage.getItem(KEY);
 	if (str) {
-		return sanitizeState(JSON.parse(str));
+		return stringToState(JSON.parse(str));
 	} else {
-		return sanitizeState();
+		return stringToState("");
 	}
 }
 
@@ -52,6 +52,30 @@ export function clearLocalStorage() {
 	localStorage.removeItem(KEY);
 }
 
+function stringToState(str) {
+	return fillActionDeltas(sanitizeState(str));
+}
+
+function fillActionDeltas(state) {
+	state.branches.forEach(branch => branch.splits.forEach(split => split.actions.forEach(action => {
+		if (action.deltaString) {
+			const [delta, error] = stringToDelta(action.deltaString);
+			if (error) {
+				action.deltaError = error;
+				action.deltas = {};
+			} else {
+				action.deltaError = undefined;
+				action.deltas = delta;
+			}
+		} else {
+			action.deltaError = undefined;
+			action.deltas = {};
+		}
+
+	})));
+	return state;
+}
+
 export function sanitizeState(state) {
 	if (!state) {
 		return {
@@ -59,7 +83,8 @@ export function sanitizeState(state) {
 			activeSplit: -1,
 			activeBranch: -1,
 			activeAction: -1,
-			branches: []
+			branches: [],
+			items: [],
 		}
 	}
 	const activeBranch = sanitizeIndex(state.activeBranch, state.branches);
@@ -80,8 +105,13 @@ export function sanitizeState(state) {
 		activeBranch,
 		activeSplit,
 		activeAction,
-		branches: state.branches.map(sanitizeBranch)
+		branches: sanitizeArray(state.branches).map(sanitizeBranch),
+		items: sanitizeArray(state.items).map(sanitizeItem),
 	}
+}
+
+function sanitizeArray(array) {
+	return array || [];
 }
 
 function sanitizeIndex(i, array) {
@@ -94,7 +124,7 @@ function sanitizeIndex(i, array) {
 
 export function sanitizeBranch(branch) {
 	const template = {
-		name: "Branch",
+		name: "",
 		expanded: false,
 		splits: []
 	}
@@ -116,7 +146,7 @@ export function sanitizeBranch(branch) {
 
 export function sanitizeSplit(split) {
 	const template = {
-		name: "Split",
+		name: "",
 		expanded: false,
 		actions: []
 	}
@@ -138,10 +168,10 @@ export function sanitizeSplit(split) {
 
 export function sanitizeAction(action) {
 	const template = {
-		name: "Action",
+		name: "",
 		expanded: false,
 		deltaString: "",
-		deltaError: false,
+		deltaError: undefined,
 		deltas: {},
 	}
 	if (!action) {
@@ -152,13 +182,13 @@ export function sanitizeAction(action) {
 		clean.name = action.name;
 	}
 	if (action.deltaString) {
-		clean.name = action.deltaString;
+		clean.deltaString = action.deltaString;
 	}
 	if (action.expanded) {
 		clean.expanded = true;
 	}
 	if (action.deltaError) {
-		clean.deltaError = true;
+		clean.deltaError = action.deltaError;
 	}
 	if (action.deltas) {
 		clean.deltas = sanitizeDelta(action.deltas)
@@ -177,17 +207,31 @@ export function sanitizeDelta(delta) {
 					copy[key] = {
 						type: t,
 						value: delta[key].value,
-						create: delta[key].create ? true : false
 					}
 				}
 			} else {
 				copy[key] = {
 					type: t,
 					value: delta[key].value.toString(),
-					create: delta[key].create ? true : false
 				}
 			}
 		}
+	}
+	return copy;
+}
+
+export function sanitizeItem(item) {
+	const template = {
+		name: "",
+		color: "",
+	}
+	if (!item) return { ...template };
+	const copy = { ...template };
+	if (item.name) {
+		copy.name = item.name;
+	}
+	if (item.color) {
+		copy.color = item.color;
 	}
 	return copy;
 }

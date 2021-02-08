@@ -9,7 +9,8 @@ import Actions from './sections/Actions';
 import { readFromLocalStorage, saveToLocalStorage, downloadToFile, sanitizeSplit } from './sections/components/util/storage';
 import Alert from './sections/Alert';
 import { benchmarkTime, benchmarkDelta } from './sections/components/util/benchmark';
-import { tryClearResourceErrorFrom, calculateResourcesAt } from './sections/components/util/data';
+import { tryClearResourceErrorFrom, calculateResourcesAt, getPreviousActionIndices } from './sections/components/util/data';
+import Items from './sections/Items';
 
 class App extends React.Component {
   constructor(props) {
@@ -24,13 +25,18 @@ class App extends React.Component {
       dimensions: undefined,
 
       branches: [],
+      items: [],
+      resources: {
+        content: [],
+        error: undefined,
+      },
 
       activeBranch: -1,
       activeSplit: -1,
       activeAction: -1,
       dirtyBranch: -1,
       dirtySplit: -1,
-      dirtyAction: -1,
+      dirtyAction: 0,
 
       autoSave: true,
       autoSaveHandle: undefined,
@@ -50,9 +56,12 @@ class App extends React.Component {
 
 
   recalculateResources(branch, split) {
-    if (branch > this.state.branches.length) return;
-    if (branch > this.state.dirtyBranch) return;
-    if (branch === this.state.dirtyBranch && split > this.state.dirtySplit) return;
+    if (this.state.resourceUpdateHandle) {
+      if (branch > this.state.branches.length) return;
+      if (branch > this.state.dirtyBranch) return;
+      if (branch === this.state.dirtyBranch && split > this.state.dirtySplit) return;
+    }
+
     if (this.state.resourceUpdateHandle) {
       window.clearTimeout(this.state.resourceUpdateHandle);
     }
@@ -78,7 +87,7 @@ class App extends React.Component {
     let b = this.state.dirtyBranch;
     let s = this.state.dirtySplit;
     let a = this.state.dirtyAction;
-
+    console.log(`calc resource, b=${b}, s=${s}, a=${a}`);
     if (b >= this.state.branches.length) {
       this.finishResourceUpdate();
       return;
@@ -104,7 +113,7 @@ class App extends React.Component {
       a = 0;
     }
 
-    const newResources = calculateResourcesAt(this.state.resources, this.state.branches, b, s, a);
+    const newResources = calculateResourcesAt(this.state.resources, this.state.branches, this.state.items, b, s, a);
     this.setState({
       dirtyBranch: b,
       dirtySplit: s,
@@ -116,7 +125,7 @@ class App extends React.Component {
       }, 100);
       this.setState({
         resourceUpdateHandle: handle,
-        info: `Resources updated for ${this.state.branches[b].name} Branch, ${this.state.branches[b].splits[s].name} Split, ${this.state.branches[b].splits[s].actions[a].names}`,
+        info: `Resources updated for "${this.state.branches[b].name}" Branch, "${this.state.branches[b].splits[s].name}" Split: ${this.state.branches[b].splits[s].actions[a].name}`,
       });
     })
   }
@@ -136,7 +145,7 @@ class App extends React.Component {
     this.calculateDimensions();
     this.loadStoredState(readFromLocalStorage);
     this.setAutoSave(true);
-    this.recalculateResources(0, 0);
+
   }
 
   setAutoSave(autoSave) {
@@ -188,8 +197,10 @@ class App extends React.Component {
         activeBranch: storedState.activeBranch,
         activeSplit: storedState.activeSplit,
         projectName: storedState.projectName,
+        items: storedState.items,
       }, () => {
         this.setInformation(`Data loaded in ${benchmarkDelta(startTime)} ms`);
+        this.recalculateResources(0, 0);
       })
     }
   }
@@ -207,6 +218,7 @@ class App extends React.Component {
       activeSplit: this.state.activeSplit,
       activeAction: this.state.activeAction,
       projectName: this.state.projectName,
+      itmes: this.state.items,
     }
   }
 
@@ -269,8 +281,25 @@ class App extends React.Component {
       if (info) {
         this.setInformation(`${info} (${benchmarkDelta(startTime)}ms)`);
       }
-      if (dirtyBranch) {
+      if (dirtyBranch !== undefined) {
         this.recalculateResources(dirtyBranch, dirtySplit || 0);
+      }
+    })
+  }
+
+  doToItems(transitionFunction, info, doRecalculate) {
+    const startTime = benchmarkTime();
+    this.setState({
+      ...transitionFunction({
+        branches: this.state.branches,
+        items: this.state.items,
+      })
+    }, () => {
+      if (info) {
+        this.setInformation(`${info} (${benchmarkDelta(startTime)}ms)`);
+      }
+      if (doRecalculate) {
+        this.recalculateResources(0, 0);
       }
     })
   }
@@ -310,6 +339,18 @@ class App extends React.Component {
       this.setInformation(`Split detail opened. (${benchmarkDelta(startTime)}ms)`);
     })
   }
+
+  openAction(a) {
+    if (this.state.activeBranch >= 0 && this.state.activeSplit >= 0) {
+      const startTime = benchmarkTime();
+      this.setState({
+        activeAction: a,
+      }, () => {
+        this.setInformation(`Action resources opened. (${benchmarkDelta(startTime)}ms)`);
+      })
+    }
+
+  }
   render() {
     if (!this.state.dimensions) {
       return null;
@@ -332,12 +373,38 @@ class App extends React.Component {
       copySplit: (split) => this.setState({ splitClipboard: sanitizeSplit(split), info: "Split copied." }),
       splitClipboard: this.state.splitClipboard,
       openSplit: this.openSplit.bind(this),
+      doToItems: this.doToItems.bind(this),
     }
 
     const showAction = this.state.activeBranch >= 0 &&
       this.state.activeBranch < this.state.branches.length &&
       this.state.activeSplit >= 0 &&
       this.state.activeSplit < this.state.branches[this.state.activeSplit].splits.length;
+
+    let actionResources, lastActionResources;
+    if (showAction) {
+      const rec = this.state.resources.content;
+      if (rec) {
+        const branchRec = this.state.resources.content[this.state.activeBranch];
+        if (branchRec) {
+          const splitRec = this.state.resources.content[this.state.activeBranch][this.state.activeSplit];
+          if (splitRec) {
+            actionResources = this.state.resources.content[this.state.activeBranch][this.state.activeSplit][this.state.activeAction];
+            const [prevB, prevS, prevA, hasPrev] = getPreviousActionIndices(this.state.branches, this.state.activeBranch, this.state.activeSplit, this.state.activeAction);
+            lastActionResources = {};
+            if (hasPrev) {
+              const prevBranchRec = this.state.resources.content[prevB];
+              if (prevBranchRec) {
+                const prevSplitRec = this.state.resources.content[prevB][prevS];
+                if (prevSplitRec) {
+                  lastActionResources = this.state.resources.content[prevB][prevS][prevA];
+                }
+              }
+            }
+          }
+        }
+      }
+    }
     return (
 
       <div style={{
@@ -358,7 +425,7 @@ class App extends React.Component {
         <Box layout={this.state.dimensions.footer} borderClass="border">
           <Footer text={this.state.info} />
         </Box>
-        <Box layout={this.state.dimensions.map} borderClass="border">
+        <Box layout={this.state.dimensions.map}>
           <iframe src="https://objmap.zeldamods.org/#/map/z3,0,4" title="Object Map" width="100%" height="100%"></iframe>
         </Box>
         <Box layout={this.state.dimensions.actions} borderClass="border">
@@ -371,9 +438,18 @@ class App extends React.Component {
             splitIndex={this.state.activeSplit}
             branchIndex={this.state.activeBranch} />
         </Box>
-        <Box layout={this.state.dimensions.resources} borderClass="border">
-          [WIP]
-        </Box>
+        {!this.state.dimensions.resources.hide &&
+          <Box layout={this.state.dimensions.resources} borderClass="border">
+            <Items
+              layout={this.state.dimensions.resources}
+              actions={actions}
+              resourcesCollapsed={this.state.resourcesCollapsed}
+              sideCollapsed={this.state.sideCollapsed}
+              items={this.state.items}
+              actionResources={actionResources}
+              lastActionResources={lastActionResources}
+            />
+          </Box>}
 
         <Alert
           enabled={this.state.displayAlert}

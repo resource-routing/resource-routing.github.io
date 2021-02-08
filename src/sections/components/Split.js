@@ -1,7 +1,8 @@
 import ActionSummary from "./ActionSummary";
 import ExpandButton from "./ExpandButton";
 import { breakBranchAt, createSplitAt, deleteSplitAt, moveFirstSplitOfBranchToPreviousBranch, moveLastSplitOfBranchToNextBranch, setSplitPropertyAt, swapSplits } from "./util/data";
-export default function Split({ name, branchIndex, index, expanded, isLast, isLastBranch, isFirstBranch, editing, splitActions, actions }) {
+export default function Split({ name, branchIndex, index, expanded, isLast, isLastBranch, isFirstBranch, editing, splitActions, actions, setEditing }) {
+	const displayName = name || "[Unnamed Split]";
 	const splitNode = (
 		<tr key={`b_${branchIndex}_s_${index}_split`}>
 			<td className="icon-button-width">{editing && <button className="icon-button" title="Break branch" onClick={() => {
@@ -24,7 +25,7 @@ export default function Split({ name, branchIndex, index, expanded, isLast, isLa
 						}} />
 					: <u className="split-link" onClick={() => {
 						actions.openSplit(branchIndex, index);
-					}}>{name}</u>}
+					}}>{displayName}</u>}
 			</td>
 			{editing && <td className="icon-button-width">
 				<button className="icon-button" title="Copy" onClick={() => {
@@ -71,6 +72,7 @@ export default function Split({ name, branchIndex, index, expanded, isLast, isLa
 				<td className="icon-button-width">
 					<button className="icon-button" title="New Split Below" onClick={() => {
 						actions.doToBranches(createSplitAt(branchIndex, index + 1), "Split created.", branchIndex, index + 1);
+						setEditing(true);
 					}}>*</button>
 				</td>
 			}

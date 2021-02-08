@@ -41,6 +41,10 @@
   width:100%;
 }
 
+.action-name-width{
+  width:10rem;
+}
+
 input.full-width {
   box-sizing: border-box;
 }
@@ -72,4 +76,16 @@ iframe{
 .split-link{
   color: blue;
   cursor: pointer;
+}
+
+.align-right{
+  text-align: right;
+}
+
+.item-span{
+  padding:0 0.2rem;
+}
+
+.deltastr-error{
+  background-color: rgb(255, 121, 121);
 }

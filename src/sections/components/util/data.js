@@ -1,5 +1,6 @@
-import stringToDelta from './actiondelta';
-import { sanitizeBranch, sanitizeAction, sanitizeSplit } from './storage';
+import { truncate } from 'fs';
+import stringToDelta, { deltaToString, renameItemInDelta } from './actiondelta';
+import { sanitizeBranch, sanitizeAction, sanitizeSplit, sanitizeItem } from './storage';
 
 export function createBranchAt(index) {
 	return function ({ branches, activeBranch }) {
@@ -314,34 +315,28 @@ export function swapActions(bIndex, sIndex, ai, aj) {
 
 }
 
-export function setActionPropertyAt(branches, bIndex, sIndex, index, property, value) {
+export function setActionPropertyAt(bIndex, sIndex, index, property, value) {
 	return function ({ branches }) {
 		if (property === "deltas") return {};
 		const branchesCopy = deepCopyBranches(branches);
 		branchesCopy[bIndex].splits[sIndex].actions[index][property] = value;
+		if (property === "deltaString") {
+			applyActionDeltaStringEdit(branchesCopy[bIndex].splits[sIndex].actions[index]);
+		}
 		return {
 			branches: branchesCopy
 		}
 	}
 }
 
-export function applyActionEditAtSplit(bIndex, sIndex) {
-	return function ({ branches }) {
-		const branchesCopy = deepCopyBranches(branches);
-		for (let a = 0; a < branches[bIndex].splits[sIndex].actions.length; a++) {
-			const action = branches[bIndex].splits[sIndex].actions[a];
-			const newDelta = stringToDelta(action.deltaString);
-			if (newDelta) {
-				action.deltas = newDelta;
-				action.deltaError = false;
-			} else {
-				action.deltas = {};
-				action.deltaError = true;
-			}
-		}
-		return {
-			branches: branchesCopy,
-		}
+function applyActionDeltaStringEdit(action) {
+	const [newDelta, error] = stringToDelta(action.deltaString);
+	if (newDelta) {
+		action.deltas = newDelta;
+		action.deltaError = undefined;
+	} else {
+		action.deltas = {};
+		action.deltaError = error;
 	}
 }
 
@@ -358,7 +353,32 @@ export function tryClearResourceErrorFrom(resources, branch, split) {
 	}
 }
 
-export function calculateResourcesAt(resources, branches, b, s, a) {
+export function getPreviousActionIndices(branches, b, s, a) {
+	if (a <= 0 && s <= 0 && b <= 0) {
+		return [-1, -1, -1, false];
+	}
+	let prevA;
+	let prevS;
+	let prevB;
+	if (a <= 0) {
+		if (s <= 0) {
+			prevB = b - 1;
+			prevS = branches[prevB].splits.length - 1;
+			prevA = branches[prevB].splits[prevS].actions.length - 1;
+		} else {
+			prevB = b;
+			prevS = s - 1;
+			prevA = branches[prevB].splits[prevS].actions.length - 1;
+		}
+	} else {
+		prevB = b;
+		prevS = s;
+		prevA = a - 1;
+	}
+	return [prevB, prevS, prevA, true];
+}
+
+export function calculateResourcesAt(resources, branches, items, b, s, a) {
 	if (resources.error) return {};
 	const resourcesCopy = deepCopyResources(resources);
 	const action = branches[b].splits[s].actions[a];
@@ -366,49 +386,102 @@ export function calculateResourcesAt(resources, branches, b, s, a) {
 		resourcesCopy.error = {
 			branch: b,
 			split: s,
-			action: a
+			action: a,
+			message: action.deltaError,
 		};
 		return { resources: resourcesCopy };
 	}
 
 	let newContent;
-	if (a <= 0 && s <= 0 && b <= 0) {
-		newContent = applyDelta({}, action.deltas);
+	let errorMessage;
+	const [prevB, prevS, prevA, hasPrev] = getPreviousActionIndices(branches, b, s, a);
+	if (!hasPrev) {
+		[newContent, errorMessage] = applyDelta({}, items, action.deltas);
 	} else {
-		let prevA;
-		let prevS;
-		let prevB;
-		if (a <= 0) {
-			if (s <= 0) {
-				prevB = b - 1;
-				prevS = branches[prevB].splits.length - 1;
-				prevA = branches[prevB].splits[prevS].actions.length - 1;
-			} else {
-				prevB = b;
-				prevS = s - 1;
-				prevA = branches[prevB].splits[prevS].actions.length - 1;
-			}
-		} else {
-			prevB = b;
-			prevS = s;
-			prevA = a - 1;
-		}
-		newContent = applyDelta(resources.content[prevB][prevS][prevA], action.deltas);
+		[newContent, errorMessage] = applyDelta(resources.content[prevB][prevS][prevA], items, action.deltas);
 	}
 
-	if (!newContent) {
+	if (errorMessage) {
 		resourcesCopy.error = {
 			branch: b,
 			split: s,
-			action: a
+			action: a,
+			message: errorMessage,
 		};
 	} else {
+		if (!resourcesCopy.content) {
+			resourcesCopy.content = [];
+		}
+		if (!resourcesCopy.content[b]) {
+			resourcesCopy.content[b] = [];
+		}
+		if (!resourcesCopy.content[b][s]) {
+			resourcesCopy.content[b][s] = [];
+		}
 		resourcesCopy.content[b][s][a] = newContent;
 	}
 
 	return { resources: resourcesCopy };
 }
 
+export function createItem(index) {
+	return function ({ items }) {
+		const itemsCopy = deepCopyItems(items);
+		const newItem = sanitizeItem();
+		if (index >= itemsCopy.length) {
+			itemsCopy.push(newItem);
+		} else {
+			itemsCopy.splice(index, 0, newItem);
+		}
+		return {
+			items: itemsCopy,
+		}
+	}
+}
+
+export function deleteItem(itemIndex) {
+	return function ({ items }) {
+		const itemsCopy = deepCopyItems(items);
+		itemsCopy.splice(itemIndex, 1);
+		return {
+			items: itemsCopy,
+		}
+	}
+}
+
+export function setItemPropertyAt(itemIndex, property, value) {
+	return function ({ branches, items }) {
+		const itemsCopy = deepCopyItems(items);
+		const oldValue = itemsCopy[itemIndex][property];
+		itemsCopy[itemIndex][property] = value;
+		if (property === "name") {
+			const branchesCopy = deepCopyBranches(branches);
+			renameItemInDeltaString(branchesCopy, value, oldValue);
+			return {
+				items: itemsCopy,
+				branches: branchesCopy,
+			}
+		} else {
+			return {
+				items: itemsCopy,
+			}
+		}
+
+	}
+}
+
+export function removeUnusedItems() {
+	return function ({ branches, items }) {
+		const itemsCopy = deepCopyItems(items);
+		const branchesCopy = deepCopyBranches(branches);
+		const usedItems = getUsedItemsInDeltaString(branchesCopy);
+		removeUnusedItemsInDeltaString(branchesCopy, usedItems);
+		return {
+			items: itemsCopy,
+			branches: branchesCopy,
+		}
+	}
+}
 
 function deepCopyBranches(branches) {
 	return branches.map(sanitizeBranch);
@@ -424,10 +497,23 @@ function deepCopyResourceContent(content) {
 	return content.map(branchContent => branchContent.map(splitContent => splitContent.map(actionContent => ({ ...actionContent }))));
 }
 
-function applyDelta(resource, delta) {
+function deepCopyItems(items) {
+	return items.map(sanitizeItem);
+}
+
+function applyDelta(resource, items, delta) {
 	const copy = { ...resource };
 	for (const name in delta) {
-		if (!(name in resource) && !delta[name].create) return null;
+		if (!(name in items)) return [null, `Item "${name}" is undefined. Add "*" at the beginning of the item to define it`];
+		if (!(name in resource)) {
+			resource[name] = 0;
+		}
+		if (delta[name].type.startsWith("ref")) {
+			if (!(delta[name].value in items)) return [null, `Item "${name}" refers to undefined item "${delta[name].value}"`];
+			if (!(delta[name].value in resource)) {
+				resource[delta[name].value] = 0;
+			}
+		}
 		switch (delta[name].type) {
 			case "add":
 				copy[name] = resource[name] + delta[name].value;
@@ -436,20 +522,55 @@ function applyDelta(resource, delta) {
 				copy[name] = delta[name].value;
 				break;
 			case "ref_add":
-				if (!(delta[name].value in resource)) return null;
 				copy[name] = resource[name] + resource[delta[name].value];
 				break;
 			case "ref_sub":
-				if (!(delta[name].value in resource)) return null;
 				copy[name] = resource[name] - resource[delta[name].value];
 				break;
 			case "ref_set":
-				if (!(delta[name].value in resource)) return null;
 				copy[name] = resource[delta[name].value];
 				break;
-			default: return null;
+			default: return [null, `Invalid delta type in item "${name}"`];
 		}
 	}
-	return copy;
+	return [copy, null];
 }
 
+function renameItemInDeltaString(branchesCopy, oldName, newName) {
+	branchesCopy.forEach(branch => branch.splits.forEach(split => split.actions.forEach(action => {
+		const [deltas, error] = stringToDelta(action.deltaString);
+		if (!error) {
+			renameItemInDelta(deltas, oldName, newName);
+			action.deltaString = deltaToString(deltas);
+		}
+
+	})));
+}
+
+function getUsedItemsInDeltaString(branchesCopy) {
+	const items = {};
+	branchesCopy.forEach(branch => branch.splits.forEach(split => split.actions.forEach(action => {
+		const [deltas, error] = stringToDelta(action.deltaString);
+		if (!error) {
+			for (const name in deltas) {
+				items[name] = true;
+			}
+		}
+	})));
+	return items;
+}
+
+function removeUnusedItemsInDeltaString(branchesCopy, usedItems) {
+	branchesCopy.forEach(branch => branch.splits.forEach(split => split.actions.forEach(action => {
+		const [deltas, error] = stringToDelta(action.deltaString);
+		if (!error) {
+			for (const name in deltas) {
+				if (!(name in usedItems)) {
+					delete deltas.name;
+				}
+			}
+			action.deltaString = deltaToString(deltas);
+		}
+
+	})));
+}

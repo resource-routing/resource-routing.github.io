@@ -1,7 +1,7 @@
 import Split from "./Split";
 import { createSplitAt, mergeNextBranchWithCurrentBranch } from "./util/data";
 
-export default function SplitList({ branchIndex, splits, isLastBranch, isFirstBranch, editing, actions }) {
+export default function SplitList({ branchIndex, splits, isLastBranch, isFirstBranch, editing, actions, setEditing }) {
 	const splitNodes = splits.map((split, i) => (
 		<Split
 			key={`branch_${branchIndex}_split_${i}_`}
@@ -15,6 +15,7 @@ export default function SplitList({ branchIndex, splits, isLastBranch, isFirstBr
 			editing={editing}
 			actions={actions}
 			splitActions={split.actions}
+			setEditing={setEditing}
 		/>
 	));
 	splitNodes.push(<tr key={`branch_${branchIndex}_split_actions`}>
@@ -25,6 +26,7 @@ export default function SplitList({ branchIndex, splits, isLastBranch, isFirstBr
 			<button onClick={() => {
 				const len = splits.length;
 				actions.doToBranches(createSplitAt(branchIndex, len), "Split created.", branchIndex, len)
+				setEditing(true);
 			}}>New Split</button>
 			<button className="space-left-small" disabled={actions.splitClipboard === undefined} onClick={() => {
 				const len = splits.length;

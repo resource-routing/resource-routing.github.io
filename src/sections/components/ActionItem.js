@@ -1,30 +1,51 @@
 import ExpandButton from "./ExpandButton";
+import { setActionPropertyAt } from "./util/data";
+import DeltaItem from "./DeltaList";
 
-export default function ActionItem({ name, index, expanded, editing, actions, isLast, deltaString, deltaError, deltas }) {
-
-	return (
+export default function ActionItem({ name, branchIndex, splitIndex, index, expanded, editing, actions, isLast, deltaString, deltaError, deltas }) {
+	const displayName = name || "[Unnamed Action]";
+	const actionNode = (
 		<tr key={"action_" + index}>
 			<td className="icon-button-width">
 				{deltaString && <ExpandButton expanded={expanded} setExpanded={(expanded) => {
-					//actions.doToBranches(setBranchPropertyAt(index, "expanded", expanded), `Branch ${expanded ? "expanded" : "collapsed"}.`)
+					actions.doToBranches(setActionPropertyAt(branchIndex, splitIndex, index, "expanded", expanded), `Action ${expanded ? "expanded" : "collapsed"}.`)
 				}} />
 
 				}
 
 			</td>
-			<td >
-				{editing ?
+			{editing &&
+				<td className="action-name-width">
 					<input
-						className="full-width"
+						className="action-name-width"
 						placeholder="Action Title/Notes"
 						type="text"
 						value={name}
 						onChange={(e) => {
-							//actions.doToBranches(setBranchPropertyAt(index, "name", e.target.value))
+							actions.doToBranches(setActionPropertyAt(branchIndex, splitIndex, index, "name", e.target.value));
 						}} />
-					: <span>{deltaString ? name : <em>*{name}</em>}</span>}
+				</td>
 
-			</td>
+			}
+
+			{!editing &&
+
+				<td colSpan="6"><span>{deltaString ? <strong>{displayName}</strong> : <em>{displayName}</em>}</span></td>}
+
+
+			{editing &&
+				<td>
+					<input
+						className="full-width"
+						placeholder="Delta String"
+						type="text"
+						value={deltaString}
+						onChange={(e) => {
+							actions.doToBranches(setActionPropertyAt(branchIndex, splitIndex, index, "deltaString", e.target.value), "Delta string changed.", branchIndex, splitIndex);
+						}} />
+				</td>
+
+			}
 			{editing && <td className="icon-button-width">
 				<button className="icon-button" disabled={index === 0} title="Move up" onClick={() => {
 					//actions.doToBranches(swapBranches(index, index - 1), "Branch moved.", index - 1);
@@ -52,4 +73,9 @@ export default function ActionItem({ name, index, expanded, editing, actions, is
 			}
 		</tr>
 	);
+
+	const deltaNode = <DeltaItem key={"action_" + index + "_delta"} deltaError={deltaError} deltas={deltas} />;
+
+	if (!expanded || !deltaString) return actionNode;
+	return [actionNode, deltaNode];
 }

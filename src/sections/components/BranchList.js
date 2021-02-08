@@ -2,7 +2,7 @@ import Branch from "./Branch";
 
 import { createBranchAt } from './util/data';
 
-export default function BranchList({ branches, editing, actions }) {
+export default function BranchList({ branches, editing, setEditing, actions }) {
 	if (!branches) return null;
 	return (
 		<table>
@@ -17,6 +17,7 @@ export default function BranchList({ branches, editing, actions }) {
 						actions={actions}
 						isLast={i === branches.length - 1}
 						splits={branch.splits}
+						setEditing={setEditing}
 					/>
 				))}
 				<tr key="new_branch_button">
@@ -24,6 +25,7 @@ export default function BranchList({ branches, editing, actions }) {
 						<button onClick={() => {
 							const len = branches.length;
 							actions.doToBranches(createBranchAt(len), "Branch created.", len);
+							setEditing(true);
 						}}>New Branch</button>
 					</td>
 				</tr>

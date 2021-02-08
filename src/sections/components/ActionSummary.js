@@ -4,7 +4,7 @@ export default function ActionSummary({ actions, b, s }) {
 			<td></td><td></td>
 			<td className="icon-button-width">&gt;</td>
 			<td>
-				{!action.deltaString ? <em>*{action.name}</em> : action.name}
+				{!action.deltaString ? <em>{action.name}</em> : action.name}
 			</td>
 		</tr>
 	));

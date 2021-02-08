@@ -1,6 +1,7 @@
 type State = {
 	branches: Branch[],
 	resources: BranchResource[],
+	items: Item[],
 	dirtyBranch: number,
 	dirtySplit: number,
 	dirtyAction: number,
@@ -30,10 +31,14 @@ type Action = {
 	deltas: Record<string, DeltaItem>,
 }
 
+type Item = {
+	name: string,
+	color: string,
+}
+
 type DeltaItem = {
 	type: "add" | "set" | "ref_add" | "ref_set" | "ref_sub",
 	value: string | number,
-	create: boolean,
 }
 
 type Resources = {
@@ -45,6 +50,7 @@ type ResourceError = {
 	branch: number,
 	split: number,
 	action: number,
+	message: string,
 }
 
 type BranchResource = SplitResource[];

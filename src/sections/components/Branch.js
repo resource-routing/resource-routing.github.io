@@ -3,8 +3,8 @@ import SplitList from "./SplitList";
 
 import { deleteBranchAt, setBranchPropertyAt, swapBranches, createBranchAt } from './util/data';
 
-export default function Branch({ name, index, expanded, editing, actions, isLast, splits }) {
-
+export default function Branch({ name, index, expanded, editing, actions, isLast, splits, setEditing }) {
+	const displayName = name || "[Unnamed Branch]";
 	const branchNode = (
 		<tr key={"branch_content_" + index}>
 			<td className="icon-button-width">
@@ -22,7 +22,7 @@ export default function Branch({ name, index, expanded, editing, actions, isLast
 						onChange={(e) => {
 							actions.doToBranches(setBranchPropertyAt(index, "name", e.target.value))
 						}} />
-					: <strong>{name}</strong>}
+					: <strong>{displayName}</strong>}
 
 			</td>
 			{editing && <td className="icon-button-width">
@@ -52,6 +52,7 @@ export default function Branch({ name, index, expanded, editing, actions, isLast
 				<td className="icon-button-width">
 					<button className="icon-button" title="New Branch Below" onClick={() => {
 						actions.doToBranches(createBranchAt(index + 1), "Branch created.", index + 1);
+						setEditing(true);
 					}}>*</button>
 				</td>
 			}
@@ -68,5 +69,6 @@ export default function Branch({ name, index, expanded, editing, actions, isLast
 		isFirstBranch={index === 0}
 		editing={editing}
 		actions={actions}
+		setEditing={setEditing}
 	/>)
 }
