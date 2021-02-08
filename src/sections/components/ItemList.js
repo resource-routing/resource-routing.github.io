@@ -39,13 +39,13 @@ function ItemEdit({ name, color, index, isLast, actions, setEditing }) {
 					}} />
 			</td>
 			<td className="icon-button-width">
-				<button className="icon-button" disabled={index === 0} title="Move up" onClick={() => {
+				<button className="icon-button" disabled={/*index === 0*/true} title="Move up" onClick={() => {
 					//actions.doToBranches(swapBranches(index, index - 1), "Branch moved.", index - 1);
 				}}>&uarr;</button>
 			</td>
 
 			<td className="icon-button-width">
-				<button className="icon-button" title="Move down" disabled={isLast} onClick={() => {
+				<button className="icon-button" title="Move down" disabled={/*isLast*/true} onClick={() => {
 					//actions.doToBranches(swapBranches(index, index + 1), "Branch moved.", index);
 				}}>&darr;</button>
 			</td>
@@ -58,7 +58,7 @@ function ItemEdit({ name, color, index, isLast, actions, setEditing }) {
 					}, "Cancel", () => {
 						actions.hideAlert();
 					});
-				}}>X</button>
+				}} disabled>X</button>
 			</td>
 
 
@@ -66,7 +66,7 @@ function ItemEdit({ name, color, index, isLast, actions, setEditing }) {
 				<button className="icon-button" title="New Branch Below" onClick={() => {
 					actions.doToItems(createItem(index + 1), "Item created.");
 					setEditing(true);
-				}}>*</button>
+				}} disabled>*</button>
 			</td>
 
 		</tr>
