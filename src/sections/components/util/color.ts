@@ -1,12 +1,11 @@
-export function shouldMakeTextWhiteForBackground(color) {
+export function shouldMakeTextWhiteForBackground(color: string): boolean {
 	//https://stackoverflow.com/questions/3942878/how-to-decide-font-color-in-white-or-black-depending-on-background-color
-
 	const [r, g, b] = htmlColorToRGB(color).map(linerize);
 	const L = 0.2126 * r + 0.7152 * g + 0.0722 * b;
 	return L < 0.22;
 }
 
-function linerize(c) {
+function linerize(c: number): number {
 	c = c / 255.0;
 	if (c <= 0.03928) {
 		c = c / 12.92;
@@ -16,7 +15,7 @@ function linerize(c) {
 	return c;
 }
 
-function htmlColorToRGB(htmlColor) {
+function htmlColorToRGB(htmlColor: string): number[] {
 	htmlColor = htmlColor.toLowerCase();
 	if (htmlColor.startsWith("rgb(") && htmlColor.endsWith(")")) {
 		const htmlrgb = htmlColor.replace("rgb(", "").replace(")", "").split(",").map(i => Number(i.trim())).map(i => Number.isNaN(i) ? 0 : i);
@@ -25,6 +24,9 @@ function htmlColorToRGB(htmlColor) {
 	//https://stackoverflow.com/questions/1573053/javascript-function-to-convert-color-names-to-hex-codes
 	if (!window.getComputedStyle) return [255, 255, 255];
 	const div = document.getElementById("temp");
+	if (div == null) {
+		return [255, 255, 255];
+	}
 	div.style.color = htmlColor;
 	const color = window.getComputedStyle(div).color;
 
@@ -35,6 +37,4 @@ function htmlColorToRGB(htmlColor) {
 		}
 	}
 	return rgb;
-
-
 }

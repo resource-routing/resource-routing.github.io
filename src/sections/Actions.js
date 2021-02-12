@@ -3,8 +3,10 @@ import Box from './components/Box';
 import ActionList from "./components/ActionList";
 import { useState } from "react";
 import ExpandButton from "./components/ExpandButton";
+import { getActiveBranch, getActiveSplitName, getActiveSplit } from './components/util/select';
+import { connect } from 'react-redux';
 
-export default function Actions({ layout, resourcesCollapsed, actionList, actions, splitName, splitIndex, branchIndex }) {
+export function Actions({ layout, splitName, resourcesCollapsed, actions }) {
 	const [editing, setEditing] = useState(false);
 	const buttonSection = (
 		<span>
@@ -13,13 +15,10 @@ export default function Actions({ layout, resourcesCollapsed, actionList, action
 			<button className="space-left-small" disabled>Next</button>
 		</span>
 	);
-	const actionSection = actionList ? (
+	const actionSection = splitName ? (
 		<ActionList
-			actionList={actionList}
 			editing={editing}
-			actions={actions}
-			splitIndex={splitIndex}
-			branchIndex={branchIndex} />
+			actions={actions} />
 	) : (
 			"Click on a split to view details."
 		);
@@ -34,7 +33,7 @@ export default function Actions({ layout, resourcesCollapsed, actionList, action
 				<div>
 					<ExpandButton
 						expanded={!resourcesCollapsed} setExpanded={(expanded) => actions.setResourcesCollapsed(!expanded)} />
-					<strong> Split Detail {actionList && (" - " + splitName)}</strong>
+					<strong> Split Detail {splitName && (" - " + splitName)}</strong>
 					{!resourcesCollapsed && buttonSection}
 					{!resourcesCollapsed && <hr />}
 				</div>
@@ -45,4 +44,14 @@ export default function Actions({ layout, resourcesCollapsed, actionList, action
 
 		</div>
 	)
-}
+};
+
+const mapStateToProps = (state, ownProps) => ({
+	splitName: getActiveSplitName(state),
+});
+
+const mapDispatchToProps = (dispatch, ownProps) => ({
+
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(Actions);

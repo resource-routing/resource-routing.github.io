@@ -1,14 +1,16 @@
 import ExpandButton from "./ExpandButton";
 import { setActionPropertyAt } from "./util/data";
-import DeltaItem from "./DeltaList";
+import { connect } from "react-redux";
+import DeltaList from "./DeltaList";
+import { getActiveAction, getActiveSplitActionCount, getActiveSplitActionDeltaError, getActiveSplitActionDeltas, getActiveSplitActionDeltaString, getActiveSplitActionName, isActiveSplitActionExpanded } from "./util/select";
 
-export default function ActionItem({ name, branchIndex, splitIndex, index, expanded, editing, actions, isLast, deltaString, deltaError, deltas }) {
+export function ActionItem({ actionIndex, name, expanded, editing, actions, isLast, deltaString, deltaError, deltas }) {
 	const displayName = name || "[Unnamed Action]";
 	const actionNode = (
-		<tr key={"action_" + index}>
+		<tr key={"action_" + actionIndex}>
 			<td className="icon-button-width">
 				{deltaString && <ExpandButton expanded={expanded} setExpanded={(expanded) => {
-					actions.doToBranches(setActionPropertyAt(branchIndex, splitIndex, index, "expanded", expanded), `Action ${expanded ? "expanded" : "collapsed"}.`)
+					//actions.doToBranches(setActionPropertyAt(branchIndex, splitIndex, index, "expanded", expanded), `Action ${expanded ? "expanded" : "collapsed"}.`)
 				}} />
 
 				}
@@ -22,7 +24,7 @@ export default function ActionItem({ name, branchIndex, splitIndex, index, expan
 						type="text"
 						value={name}
 						onChange={(e) => {
-							actions.doToBranches(setActionPropertyAt(branchIndex, splitIndex, index, "name", e.target.value));
+							//actions.doToBranches(setActionPropertyAt(branchIndex, splitIndex, index, "name", e.target.value));
 						}} />
 				</td>
 
@@ -41,21 +43,21 @@ export default function ActionItem({ name, branchIndex, splitIndex, index, expan
 						type="text"
 						value={deltaString}
 						onChange={(e) => {
-							actions.doToBranches(setActionPropertyAt(branchIndex, splitIndex, index, "deltaString", e.target.value), "Delta string changed.", branchIndex, splitIndex);
+							//actions.doToBranches(setActionPropertyAt(branchIndex, splitIndex, index, "deltaString", e.target.value), "Delta string changed.", branchIndex, splitIndex);
 						}} />
 				</td>
 
 			}
 			{editing && <td className="icon-button-width">
-				<button className="icon-button" disabled={index === 0} title="Move up" onClick={() => {
+				<button className="icon-button" disabled={actionIndex === 0} title="Move up" onClick={() => {
 					//actions.doToBranches(swapBranches(index, index - 1), "Branch moved.", index - 1);
-				}} >&uarr;</button>
+				}} disabled>&uarr;</button>
 			</td>}
 			{editing &&
 				<td className="icon-button-width">
 					<button className="icon-button" title="Move down" disabled={isLast} onClick={() => {
 						//actions.doToBranches(swapBranches(index, index + 1), "Branch moved.", index);
-					}} >&darr;</button>
+					}} disabled>&darr;</button>
 				</td>}
 			{editing &&
 				<td className="icon-button-width">
@@ -74,8 +76,24 @@ export default function ActionItem({ name, branchIndex, splitIndex, index, expan
 		</tr>
 	);
 
-	const deltaNode = <DeltaItem key={"action_" + index + "_delta"} deltaError={deltaError} deltas={deltas} />;
+	const deltaNode = <DeltaList key={"action_" + actionIndex + "_delta"} actionIndex={actionIndex} />;
 
 	if (!expanded || !deltaString) return actionNode;
 	return [actionNode, deltaNode];
-}
+};
+
+
+const mapStateToProps = (state, ownProps) => ({
+	name: getActiveSplitActionName(state, ownProps.actionIndex),
+	expanded: isActiveSplitActionExpanded(state, ownProps.actionIndex),
+	isLast: getActiveSplitActionCount(state) === ownProps.actionIndex - 1,
+	deltaString: getActiveSplitActionDeltaString(state, ownProps.actionIndex),
+	deltaError: getActiveSplitActionDeltaError(state, ownProps.actionIndex),
+	deltas: getActiveSplitActionDeltas(state, ownProps.actionIndex),
+});
+
+const mapDispatchToProps = (dispatch, ownProps) => ({
+
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(ActionItem);

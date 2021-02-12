@@ -1,17 +1,10 @@
+import { connect } from "react-redux";
+import { getActiveAction, getActiveSplitActionCount, getActiveSplitActionDeltaError, getActiveSplitActionDeltas, getActiveSplitActionDeltaString, getActiveSplitActionName, getItemColor, isActiveSplitActionExpanded } from "./util/select";
 
 
-function parseColor(name) {
-	if (!name) return ["", "auto"];
-	const i = name.indexOf("#");
-	if (i >= 0) {
-		const color = name.substring(i + 1);
-		return [name.substring(0, i), color];
-	}
-	return [name, "auto"];
-}
 
-function DeltaItem({ name, type, value, create }) {
-	const [displayName, color] = parseColor(name);
+function DeltaItemRender({ name, type, value, color }) {
+	const displayName = name;
 	let op;
 	switch (type) {
 		case "add":
@@ -37,11 +30,17 @@ function DeltaItem({ name, type, value, create }) {
 		value = `[${value}]`
 	}
 	return (
-		<span style={{ backgroundColor: color }}>[{displayName}]{op}{value}</span>
+		<span><span style={{ backgroundColor: color || "" }}>[{displayName}]</span><span>{op}{value}</span></span>
 	);
 }
 
-export default function DeltaList({ deltas, deltaError }) {
+const mapStateToPropsForDeltaItemRender = (state, ownProps) => ({
+	color: getItemColor(state, ownProps.name),
+})
+
+const DeltaItem = connect(mapStateToPropsForDeltaItemRender)(DeltaItemRender);
+
+export function DeltaList({ deltas, deltaError }) {
 	const deltaItems = [];
 	for (const name in deltas) {
 		deltaItems.push(
@@ -65,3 +64,10 @@ export default function DeltaList({ deltas, deltaError }) {
 		</tr>
 	)
 }
+
+const mapStateToProps = (state, ownProps) => ({
+	deltaError: getActiveSplitActionDeltaError(state, ownProps.actionIndex),
+	deltas: getActiveSplitActionDeltas(state, ownProps.actionIndex),
+});
+
+export default connect(mapStateToProps)(DeltaList);

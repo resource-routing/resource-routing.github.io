@@ -1,55 +1,48 @@
-import React from "react";
+import { useState } from "react";
 import Box from "./components/Box";
 import BranchList from "./components/BranchList";
 import ExpandButton from "./components/ExpandButton";
 import { collapseAll } from "./components/util/data";
+import { connect } from "react-redux";
 
-export default class SideNav extends React.Component {
-	constructor(props) {
-		super(props);
-		this.state = {
-			editing: false,
-
-		}
-	}
-
-	setEditEnabled(enabled) {
-		this.setState({ editing: enabled });
-	}
-	render() {
-		let buttonSection = (
-			<span>
-				<button className="space-left-small" onClick={() => this.setEditEnabled(!this.state.editing)}>{this.state.editing ? "Finish" : "Edit"}</button>
-				<button className="space-left-small" onClick={() => this.props.actions.doToBranches(collapseAll(), "Collapsed all.")} >Collapse All</button>
-			</span>
-		);
-		let branchSection =
-			<BranchList
-				branches={this.props.branches}
-				editing={this.state.editing}
-				actions={this.props.actions}
-				setEditing={this.setEditEnabled.bind(this)} />;
-		return (
-			<div>
-				<Box layout={this.props.layout.main} borderClass="overflow-auto">
-					<div>
-						{!this.props.sideCollapsed && branchSection}
-					</div>
-				</Box>
-				<Box layout={this.props.layout.header} >
-					<div>
-						<ExpandButton expanded={!this.props.sideCollapsed} setExpanded={(expanded) => {
-							this.props.actions.setSideCollapsed(!expanded);
-						}} />
-						{!this.props.sideCollapsed && buttonSection}
-
-					</div>
-					<hr />
-				</Box>
-
-
-
-			</div>
-		);
-	}
+export function SideNav({ layout, sideCollapsed, actions }) {
+	const [editing, setEditing] = useState(false);
+	let buttonSection = (
+		<span>
+			<button className="space-left-small" onClick={() => setEditing(!editing)}>{editing ? "Finish" : "Edit"}</button>
+			<button className="space-left-small" disabled >Collapse All</button>
+		</span>
+	);
+	let branchSection =
+		<BranchList
+			editing={editing}
+			actions={{ ...actions, setEditing }} />;
+	return (
+		<div>
+			<Box layout={layout.main} borderClass="overflow-auto">
+				<div>
+					{!sideCollapsed && branchSection}
+				</div>
+			</Box>
+			<Box layout={layout.header} >
+				<div>
+					<ExpandButton expanded={!sideCollapsed} setExpanded={(expanded) => {
+						actions.setSideCollapsed(!expanded);
+					}} />
+					{!sideCollapsed && buttonSection}
+				</div>
+				<hr />
+			</Box>
+		</div>
+	);
 }
+
+const mapStateToProps = (state, ownProps) => ({
+
+})
+
+const mapDispatchToProps = (dispatch, ownProps) => ({
+
+})
+
+export default connect(mapStateToProps, mapDispatchToProps)(SideNav);

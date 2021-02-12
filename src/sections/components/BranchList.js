@@ -1,32 +1,31 @@
+import { connect } from "react-redux";
 import Branch from "./Branch";
 
 import { createBranchAt } from './util/data';
+import { getBranchCount } from "./util/select";
 
-export default function BranchList({ branches, editing, setEditing, actions }) {
-	if (!branches) return null;
+export function BranchList({ length, editing, actions }) {
+	if (length === 0) return null;
+	const branchNodes = [];
+	for (let i = 0; i < length; i++) {
+		branchNodes.push(<Branch
+			index={i}
+			key={i}
+			editing={editing}
+			actions={actions}
+		/>);
+	};
 	return (
 		<table>
 			<tbody>
-				{branches.map((branch, i) => (
-					<Branch
-						name={branch.name}
-						key={i}
-						index={i}
-						expanded={branch.expanded}
-						editing={editing}
-						actions={actions}
-						isLast={i === branches.length - 1}
-						splits={branch.splits}
-						setEditing={setEditing}
-					/>
-				))}
+				{branchNodes}
 				<tr key="new_branch_button">
 					<td colSpan="5">
 						<button onClick={() => {
-							const len = branches.length;
-							actions.doToBranches(createBranchAt(len), "Branch created.", len);
-							setEditing(true);
-						}}>New Branch</button>
+							//const len = branches.length;
+							//actions.doToBranches(createBranchAt(len), "Branch created.", len);
+							//setEditing(true);
+						}} disabled>New Branch</button>
 					</td>
 				</tr>
 
@@ -34,4 +33,14 @@ export default function BranchList({ branches, editing, setEditing, actions }) {
 
 		</table>
 	)
-}
+};
+
+const mapStateToProps = (state, ownProps) => ({
+	length: getBranchCount(state)
+});
+
+const mapDispatchToProps = (dispatch, ownProps) => ({
+
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(BranchList);

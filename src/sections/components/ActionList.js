@@ -1,18 +1,30 @@
+import { connect } from "react-redux";
+import { fileURLToPath } from "url";
 import ActionItem from "./ActionItem";
 
 import { createActionAt } from './util/data';
+import { getActionCount, getActiveSplitActionCount, getActiveSplit, getActiveBranch } from "./util/select";
 
-export default function ActionList({ actionList, editing, actions, branchIndex, splitIndex, resourceError }) {
+export function ActionList({ length, editing, actions }) {
+	const actionNodes = [];
+	for (let i = 0; i < length; i++) {
+		actionNodes.push(<ActionItem
+			key={i}
+			actionIndex={i}
+			editing={editing}
+			actions={actions}
+		/>);
+	}
 	return (
 		<table>
 			<tbody>
-				{actionList.map((action, i) => {
+				{/* {actionList.map((action, i) => {
 					let deltaError = undefined;
-					if (actions.deltaError) {
-						deltaError = actions.deltaError;
-					} else if (resourceError && resourceError.branch === branchIndex && resourceError.split === splitIndex && resourceError.action === i) {
-						deltaError = resourceError.message;
-					}
+					// if (actions.deltaError) {
+					// 	deltaError = actions.deltaError;
+					// } else if (resourceError && resourceError.branch === branchIndex && resourceError.split === splitIndex && resourceError.action === i) {
+					// 	deltaError = resourceError.message;
+					// }
 					return <ActionItem
 						name={action.name}
 						key={i}
@@ -27,12 +39,13 @@ export default function ActionList({ actionList, editing, actions, branchIndex, 
 						deltaError={deltaError}
 						deltas={action.deltas}
 					/>
-				})}
+				})} */}
+				{actionNodes}
 				<tr key="new_action_button">
 					<td colSpan="3">
 						<button onClick={() => {
-							actions.doToBranches(createActionAt(branchIndex, splitIndex, actionList.length), "Action created.", branchIndex, splitIndex);
-						}}>Add Action/Notes</button>
+							//actions.doToBranches(createActionAt(branchIndex, splitIndex, actionList.length), "Action created.", branchIndex, splitIndex);
+						}} disabled>Add Action/Notes</button>
 					</td>
 				</tr>
 
@@ -41,3 +54,13 @@ export default function ActionList({ actionList, editing, actions, branchIndex, 
 		</table>
 	)
 }
+
+const mapStateToProps = (state, ownProps) => ({
+	length: getActiveSplitActionCount(state),
+});
+
+const mapDispatchToProps = (dispatch, ownProps) => ({
+
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(ActionList);

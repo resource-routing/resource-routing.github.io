@@ -1,6 +1,5 @@
-import { truncate } from 'fs';
-import stringToDelta, { deltaToString, renameItemInDelta } from './actiondelta';
-import { sanitizeBranch, sanitizeAction, sanitizeSplit, sanitizeItem } from './storage';
+import { stringToDelta, deltaToString, renameItemInDelta } from './delta';
+import { sanitizeBranch, sanitizeAction, sanitizeSplit, sanitizeItem } from './sanitize';
 
 export function createBranchAt(index) {
 	return function ({ branches, activeBranch }) {
@@ -574,3 +573,5 @@ function removeUnusedItemsInDeltaString(branchesCopy, usedItems) {
 
 	})));
 }
+
+

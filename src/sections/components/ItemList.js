@@ -24,7 +24,7 @@ function ItemEdit({ name, color, index, isLast, actions, setEditing }) {
 					type="text"
 					value={name}
 					onChange={(e) => {
-						actions.doToItems(setItemPropertyAt(index, "name", e.target.value))
+						//actions.doToItems(setItemPropertyAt(index, "name", e.target.value))
 					}} />
 
 			</td>
@@ -35,7 +35,7 @@ function ItemEdit({ name, color, index, isLast, actions, setEditing }) {
 					type="text"
 					value={color}
 					onChange={(e) => {
-						actions.doToItems(setItemPropertyAt(index, "color", e.target.value))
+						//actions.doToItems(setItemPropertyAt(index, "color", e.target.value))
 					}} />
 			</td>
 			<td className="icon-button-width">
@@ -52,20 +52,20 @@ function ItemEdit({ name, color, index, isLast, actions, setEditing }) {
 
 			<td className="icon-button-width">
 				<button className="icon-button" title="Delete" onClick={() => {
-					actions.displayAlert(`Delete branch "${name}"? This will also delete all the splits in the branch. (Not reversible)`, "Delete", () => {
-						actions.hideAlert();
-						//actions.doToBranches(deleteBranchAt(index), "Branch deleted.", index);
-					}, "Cancel", () => {
-						actions.hideAlert();
-					});
+					//actions.displayAlert(`Delete branch "${name}"? This will also delete all the splits in the branch. (Not reversible)`, "Delete", () => {
+					//	actions.hideAlert();
+					//actions.doToBranches(deleteBranchAt(index), "Branch deleted.", index);
+					//}, "Cancel", () => {
+					//	actions.hideAlert();
+					//});
 				}} disabled>X</button>
 			</td>
 
 
 			<td className="icon-button-width">
 				<button className="icon-button" title="New Branch Below" onClick={() => {
-					actions.doToItems(createItem(index + 1), "Item created.");
-					setEditing(true);
+					//actions.doToItems(createItem(index + 1), "Item created.");
+					//setEditing(true);
 				}} disabled>*</button>
 			</td>
 
@@ -78,7 +78,7 @@ function deltaString(delta, name) {
 	return `${value} (${change >= 0 ? "+" : ""}${change})`
 }
 
-export default function ItemList({ items, delta, editing, actions, setEditing, filter }) {
+export default function ItemList({ items, delta, editing, actions, filter }) {
 	const filterObj = [];
 	if (filter) {
 		filter.split(",").forEach(f => {
@@ -130,9 +130,9 @@ export default function ItemList({ items, delta, editing, actions, setEditing, f
 			<tr key="new_item_button">
 				<td colSpan="5">
 					<button onClick={() => {
-						const len = items.length;
-						actions.doToItems(createItem(len), "Item created.");
-						setEditing(true);
+						//const len = items.length;
+						//actions.doToItems(createItem(len), "Item created.");
+						//setEditing(true);
 					}}>New Item</button>
 				</td>
 			</tr>
