@@ -1,10 +1,20 @@
-import { useState } from 'react';
-import { connect } from 'react-redux';
-import ExpandButton from './components/ExpandButton';
-import { benchmarkTime } from './components/util/benchmark';
-import { readFromFile } from './components/util/sanitize';
-import { getProjectName, isAutoSaveEnabled, isObjectMapLinkEnabled } from './components/util/select';
-import clsx from "clsx";
+import { connect } from "react-redux";
+import ExpandButton from "components/ExpandButton";
+import {
+	isHeaderCollapsed,
+	isSideSectionCollapsed
+} from "store/application/selectors";
+import {
+	getProjectName
+} from "store/routing/selectors";
+import {
+	isAutoSaveEnabled,
+	isObjectMapLinkEnabled,
+} from "store/setting/selectors";
+import {
+	setHeaderCollapsed
+} from "store/application/actions";
+import { bindActionCreators } from "@reduxjs/toolkit";
 export function Header({ autoSaveEnabled, linkToMapEnabled, projectName, headerCollapsed, sideCollapsed, actions }) {
 	// const [file, setFile] = useState(undefined);
 	const exportButton = (
@@ -36,7 +46,7 @@ export function Header({ autoSaveEnabled, linkToMapEnabled, projectName, headerC
 			{headerCollapsed && exportButton}
 			{headerCollapsed && saveButton}
 		</span>
-	)
+	);
 
 	return (
 		<div className="overflow-hidden">
@@ -48,30 +58,28 @@ export function Header({ autoSaveEnabled, linkToMapEnabled, projectName, headerC
 				</h3>
 			}
 
-
-
-
-
-			<ExpandButton expanded={!headerCollapsed} setExpanded={(expanded) => actions.setHeaderCollapsed(!expanded)} />
+			<ExpandButton expanded={!headerCollapsed} setExpanded={(expanded) => actions.setHeaderCollapsed({ collapsed: !expanded })} />
 
 
 			{!sideCollapsed && allButtons}
 
 		</div>
 
-	)
-};
+	);
+}
 
-const mapStateToProps = (state, ownProps) => ({
+const mapStateToProps = (state) => ({
 	projectName: getProjectName(state),
 	autoSaveEnabled: isAutoSaveEnabled(state),
 	linkToMapEnabled: isObjectMapLinkEnabled(state),
+	sideCollapsed: isSideSectionCollapsed(state),
+	headerCollapsed: isHeaderCollapsed(state),
 });
 
-const mapDispatchToProps = (dispatch, ownProps) => ({
-	actions: {
-		...ownProps.actions,
-	}
+const mapDispatchToProps = (dispatch) => ({
+	actions: bindActionCreators({
+		setHeaderCollapsed
+	}, dispatch)
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(Header);

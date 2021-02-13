@@ -1,10 +1,10 @@
 
-import Box from './components/Box';
+import Box from "./components/Box";
 import ActionList from "./components/ActionList";
 import { useState } from "react";
 import ExpandButton from "./components/ExpandButton";
-import { getActiveBranch, getActiveSplitName, getActiveSplit } from './components/util/select';
-import { connect } from 'react-redux';
+import { getActiveBranch, getActiveSplitName, getActiveSplit } from "./components/util/select";
+import { connect } from "react-redux";
 
 export function Actions({ layout, splitName, resourcesCollapsed, actions }) {
 	const [editing, setEditing] = useState(false);
@@ -43,8 +43,8 @@ export function Actions({ layout, splitName, resourcesCollapsed, actions }) {
 
 
 		</div>
-	)
-};
+	);
+}
 
 const mapStateToProps = (state, ownProps) => ({
 	splitName: getActiveSplitName(state),

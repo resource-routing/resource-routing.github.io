@@ -1,13 +1,15 @@
 import { connect } from "react-redux";
-import { getInfo } from "./components/util/select"
+import {
+	getInfo
+} from "store/application/selectors";
 
 export function Footer({ text }) {
 	return (
 		<span className="vertical-center">{text}</span>
-	)
+	);
 }
 
-const mapStateToProps = (state, ownProps) => ({
+const mapStateToProps = (state) => ({
 	text: getInfo(state),
 });
 

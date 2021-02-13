@@ -1,7 +1,7 @@
-import ItemList from './components/ItemList';
-import Box from './components/Box';
+import ItemList from "./components/ItemList";
+import Box from "./components/Box";
 import { useState } from "react";
-import ExpandButton from './components/ExpandButton';
+import ExpandButton from "./components/ExpandButton";
 
 export default function Items({ layout, resourcesCollapsed, resourceInfo, items, actions, actionResources, lastActionResources }) {
 
@@ -30,11 +30,11 @@ export default function Items({ layout, resourcesCollapsed, resourceInfo, items,
 			delta[key] = {
 				value: actionResources[key],
 				change: actionResources[key] - ((key in lastActionResources) ? lastActionResources[key] : 0)
-			}
+			};
 		}
 		items = items.filter(item => {
 			return item.name in actionResources;
-		})
+		});
 	}
 
 	const itemSection =
@@ -73,5 +73,5 @@ export default function Items({ layout, resourcesCollapsed, resourceInfo, items,
 
 
 		</div>
-	)
+	);
 }
