@@ -5,6 +5,7 @@ import { RouteItem } from "data/item";
 import { RouteState } from "./type";
 import { RouteSplit } from "data/split";
 import { ReduxGlobalState } from "store/store";
+import { ReactNode } from "react";
 
 export function getRouteState(state: ReduxGlobalState): RouteState {
 	return state.routeState;
@@ -134,6 +135,32 @@ export function getActionName(state: ReduxGlobalState, branchIndex: number, spli
 	return getAction(state, branchIndex, splitIndex, actionIndex).name;
 }
 
+export function getGlobalActionIndex(state: ReduxGlobalState, branchIndex: number, splitIndex: number, actionIndex: number): number {
+	let i = 0;
+	for (let b = 0; b < branchIndex; b++) {
+		const splitCount = getSplitCount(state, b);
+		for (let s = 0; s < splitCount; s++) {
+			i += getActionCount(state, b, s);
+		}
+	}
+	for (let s = 0; s < splitIndex; s++) {
+		i += getActionCount(state, branchIndex, s);
+	}
+	return i + actionIndex;
+}
+
+export function getTotalActionCount(state: ReduxGlobalState): number {
+	let i = 0;
+	getBranches(state).forEach(branch => {
+		branch.splits.forEach(split => {
+			split.actions.forEach(_ => {
+				i++;
+			});
+		});
+	});
+	return i;
+}
+
 function getItems(state: ReduxGlobalState): RouteItem[] {
 	return getRouteState(state).items;
 }
@@ -144,7 +171,34 @@ function getItemByName(state: ReduxGlobalState, name: string): RouteItem | undef
 	return match[0];
 }
 
-export function getItemColor(state: ReduxGlobalState, name: string): string | undefined {
+export function getItemColorByName(state: ReduxGlobalState, name: string): string | undefined {
 	return getItemByName(state, name)?.color;
+}
+
+export function getFilteredItemIndices(state: ReduxGlobalState, filter: string[]): number[] {
+	if (filter.length === 0) return getItems(state).map((_, i) => i);
+	const lowerCaseFilter = filter.map(s => s.toLowerCase());
+	const indices: number[] = [];
+	getItems(state).forEach((item, itemIndex) => {
+		for (let i = 0; i < lowerCaseFilter.length; i++) {
+			if (item.name.toLowerCase().includes(lowerCaseFilter[i])) {
+				indices.push(itemIndex);
+				break;
+			}
+		}
+	});
+	return indices;
+}
+
+export function getItemNameByIndex(state: ReduxGlobalState, i: number): string {
+	return getItems(state)[i].name;
+}
+
+export function getItemColorByIndex(state: ReduxGlobalState, i: number): string {
+	return getItems(state)[i].color;
+}
+
+export function getItemCount(state: ReduxGlobalState): number {
+	return getItems(state).length;
 }
 

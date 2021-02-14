@@ -7,11 +7,11 @@ export type RouteData = {
 	items: ItemData[],
 }
 
-
-
 export type RouteResources = {
 	error: ResourceError,
-	content: ActionResource[][][],
+	content: ActionResource[],
+	progress: number,
+	total: number,
 }
 
 export type ResourceError = {
@@ -42,10 +42,6 @@ export function inflateRouteData(data: RouteData): RouteState {
 		activeSplit: -1,
 		activeAction: -1,
 		branches: (data.branches || []).map(inflateBranchData),
-		resources: {
-			content: [],
-			error: null,
-		},
 		items: (data.items || []).map(inflateItemData),
 	};
 }

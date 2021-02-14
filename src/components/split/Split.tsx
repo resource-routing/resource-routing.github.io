@@ -37,7 +37,6 @@ type Props = {
 	splitIndex: number,
 	name: string,
 	expanded: boolean,
-	isLast: boolean,
 	isLastBranch: boolean,
 	editing: boolean,
 	actions: {
@@ -55,11 +54,13 @@ type Props = {
 	appActions: AppAction,
 	copiedSplit?: RouteSplit,
 	splitToCopy: RouteSplit,
+	splitCount: number,
 }
 
 export const Split: React.FunctionComponent<Props> = ({
-	branchIndex, splitIndex, name, expanded, isLast, isLastBranch, editing, actions, appActions, copiedSplit, splitToCopy
+	branchIndex, splitIndex, name, expanded, isLastBranch, editing, actions, appActions, copiedSplit, splitToCopy, splitCount,
 }) => {
+	const isLast = splitIndex === splitCount - 1;
 	const isFirstBranch = branchIndex === 0;
 	const isFirst = splitIndex === 0;
 	const displayName = name || "[Unnamed Split]";
@@ -70,7 +71,7 @@ export const Split: React.FunctionComponent<Props> = ({
 			}} />
 		</td>;
 	const handleCreateSplit = (templateSplit?: RouteSplit) => {
-		if (length >= SPLIT_LIMIT) {
+		if (splitCount >= SPLIT_LIMIT) {
 			const message = `You have reached the maximum number of splits per branch (${SPLIT_LIMIT})`;
 			appActions.showAlert(message, undefined);
 			actions.setInfo({ info: message });
@@ -197,14 +198,14 @@ type ExternalProps = {
 	branchIndex: number,
 	splitIndex: number,
 }
-const mapStateToProps = (state: ReduxGlobalState, ownProps: ExternalProps) => ({
-	name: getSplitName(state, ownProps.branchIndex, ownProps.splitIndex),
-	expanded: isSplitExpanded(state, ownProps.branchIndex, ownProps.splitIndex),
-	isLast: getSplitCount(state, ownProps.branchIndex) === ownProps.splitIndex + 1,
-	isLastBranch: getBranchCount(state) === ownProps.branchIndex + 1,
+const mapStateToProps = (state: ReduxGlobalState, { branchIndex, splitIndex }: ExternalProps) => ({
+	name: getSplitName(state, branchIndex, splitIndex),
+	expanded: isSplitExpanded(state, branchIndex, splitIndex),
+	isLastBranch: getBranchCount(state) === branchIndex + 1,
 	editing: isEditingNav(state),
 	copiedSplit: getSplitClipboard(state),
-	splitToCopy: getSplit(state, ownProps.branchIndex, ownProps.splitIndex),
+	splitToCopy: getSplit(state, branchIndex, splitIndex),
+	splitCount: getSplitCount(state, branchIndex),
 });
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({

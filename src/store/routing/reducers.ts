@@ -1,9 +1,10 @@
 import { PayloadAction } from "@reduxjs/toolkit";
 import { newBranch } from "data/branch";
-import { BRANCH_LIMIT, SPLIT_LIMIT } from "data/limit";
+import { newItem } from "data/item";
+import { BRANCH_LIMIT, ITEM_LIMIT, SPLIT_LIMIT } from "data/limit";
 import { cloneSplit, newSplit, RouteSplit } from "data/split";
 import { ReduxGlobalState } from "store/store";
-import { getActiveBranch, getActiveSplit, getBranchCount, getSplitCount } from "./selectors";
+import { getActiveBranch, getActiveSplit, getBranchCount, getItemCount, getSplitCount } from "./selectors";
 
 function validateBranch(state: ReduxGlobalState, branchIndex: number): boolean {
 	const branchLength = getBranchCount(state);
@@ -13,6 +14,10 @@ function validateBranch(state: ReduxGlobalState, branchIndex: number): boolean {
 function validateSplit(state: ReduxGlobalState, branchIndex: number, splitIndex: number): boolean {
 	if (!validateBranch(state, branchIndex)) return false;
 	return splitIndex >= 0 && splitIndex < getSplitCount(state, branchIndex);
+}
+
+function validateItem(state: ReduxGlobalState, index: number): boolean {
+	return index >= 0 && index < getItemCount(state);
 }
 
 export default {
@@ -214,6 +219,44 @@ export default {
 			}
 		} else if (getActiveBranch(state) === branchIndex + 1) {
 			state.routeState.activeSplit += 1;
+		}
+	},
+	createItem(state: ReduxGlobalState, action: PayloadAction<{ index: number }>): void {
+		const { index } = action.payload;
+		const item = newItem();
+		const itemLength = getItemCount(state);
+		if (itemLength >= ITEM_LIMIT) {
+			return;
+		}
+		if (!validateItem(state, index)) {
+			state.routeState.items.push(item);
+		} else {
+			state.routeState.items.splice(index, 0, item);
+		}
+	},
+	setItemName(state: ReduxGlobalState, action: PayloadAction<{ index: number, name: string }>): void {
+		const { index, name } = action.payload;
+		state.routeState.items[index].name = name;
+	},
+	setItemColor(state: ReduxGlobalState, action: PayloadAction<{ index: number, color: string }>): void {
+		const { index, color } = action.payload;
+		state.routeState.items[index].color = color;
+	},
+	swapItems(state: ReduxGlobalState, action: PayloadAction<{ i: number, j: number }>): void {
+		const { i, j } = action.payload;
+		if (!validateItem(state, i) || !validateItem(state, j)) {
+			return;
+		}
+		const temp = state.routeState.items[i];
+		state.routeState.items[i] = state.routeState.items[j];
+		state.routeState.items[j] = temp;
+	},
+	deleteItem(state: ReduxGlobalState, action: PayloadAction<{ index: number }>): void {
+		const { index } = action.payload;
+		if (!validateItem(state, index)) {
+			state.routeState.items.pop();
+		} else {
+			state.routeState.items.splice(index, 1);
 		}
 	}
 };

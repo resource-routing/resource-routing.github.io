@@ -15,12 +15,14 @@ import {
 } from "store/routing/actions";
 import { isEditingNav } from "store/application/selectors";
 import {
-	setInfo
+	setInfo,
+	setEditingNav,
 } from "store/application/actions";
 import { ActionCreatorWithPayload, bindActionCreators, Dispatch } from "@reduxjs/toolkit";
 import { benchEnd, benchStart } from "util/benchmark";
 import { AppAction } from "apptype";
 import { ReduxGlobalState } from "store/store";
+import { BRANCH_LIMIT } from "data/limit";
 
 type Props = {
 	index: number,
@@ -34,14 +36,16 @@ type Props = {
 		deleteBranch: ActionCreatorWithPayload<{ branchIndex: number }>,
 		setInfo: ActionCreatorWithPayload<{ info: string }>,
 		swapBranches: ActionCreatorWithPayload<{ i: number, j: number }>,
+		setEditingNav: ActionCreatorWithPayload<{ editing: boolean }>,
 	},
-	isLast: boolean,
+	branchCount: number,
 	appActions: AppAction,
 }
 
-export const Branch: React.FunctionComponent<Props> = ({ index, name, expanded, editing, actions, isLast, appActions }: Props) => {
+export const Branch: React.FunctionComponent<Props> = ({ index, name, expanded, editing, actions, branchCount, appActions }: Props) => {
 	const displayName = name || "[Unnamed Branch]";
 	const isFirst = index === 0;
+	const isLast = index === branchCount - 1;
 	const expandButtonCell =
 		<td className="icon-button-width">
 			<ExpandButton expanded={expanded} setExpanded={(expanded) => {
@@ -101,7 +105,16 @@ export const Branch: React.FunctionComponent<Props> = ({ index, name, expanded, 
 				</td>
 				<td className="icon-button-width">
 					<button className="icon-button" title="New Branch Below" onClick={() => {
-						actions.createBranch({ branchIndex: index + 1 });
+						if (branchCount >= BRANCH_LIMIT) {
+							const message = `You have reached the maximum number of branches (${BRANCH_LIMIT})`;
+							appActions.showAlert(message);
+							actions.setInfo({ info: message });
+						} else {
+							const startTime = benchStart();
+							actions.createBranch({ branchIndex: index + 1 });
+							actions.setEditingNav({ editing: true });
+							actions.setInfo({ info: `Branch created. (${benchEnd(startTime)} ms)` });
+						}
 					}}>*</button>
 				</td>
 			</tr>;
@@ -132,11 +145,11 @@ type ExternalProps = {
 	appActions: AppAction,
 }
 
-const mapStateToProps = (state: ReduxGlobalState, ownProps: ExternalProps) => ({
-	name: getBranchName(state, ownProps.index),
-	expanded: isBranchExpanded(state, ownProps.index),
-	isLast: getBranchCount(state) === ownProps.index + 1,
-	editing: isEditingNav(state)
+const mapStateToProps = (state: ReduxGlobalState, { index }: ExternalProps) => ({
+	name: getBranchName(state, index),
+	expanded: isBranchExpanded(state, index),
+	editing: isEditingNav(state),
+	branchCount: getBranchCount(state),
 });
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
@@ -147,6 +160,7 @@ const mapDispatchToProps = (dispatch: Dispatch) => ({
 		deleteBranch,
 		setInfo,
 		swapBranches,
+		setEditingNav,
 	}, dispatch)
 });
 

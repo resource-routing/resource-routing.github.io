@@ -11,6 +11,18 @@ export type DeltaError = string | null;
 type DeltaItemString = string;
 type CompressedDeltaItemString = string;
 
+export function deleteItemInDelta(deltas: ActionDelta, deleteName: string): void {
+	for (const name in deltas) {
+		if (deltas[name].type.startsWith("ref")) {
+			if (deltas[name].value === deleteName) {
+				delete deltas[name];
+			}
+		}
+	}
+	if (deleteName in deltas) {
+		delete deltas[deleteName];
+	}
+}
 
 export function renameItemInDelta(deltas: ActionDelta, oldName: string, newName: string): void {
 	for (const name in deltas) {

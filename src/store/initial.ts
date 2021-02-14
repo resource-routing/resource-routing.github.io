@@ -68,16 +68,18 @@ export default {
 		items: [{
 			name: "hello",
 			color: "orange",
+		}, {
+			name: "item2",
+			color: "blue",
 		}],
-		resources: {
-			error: null,
-			content: [],
-		},
+
 
 	},
 	settingState: {
 		autoSave: false,
 		linkObjectMap: false,
+		onlyShowChangedItems: false,
+		itemFilter: "",
 	},
 	applicationState: {
 		layout: {
@@ -115,6 +117,13 @@ export default {
 			mapX: 0,
 			mapY: 0,
 			actions: [],
+		},
+		itemsInfo: "Hello",
+		resources: {
+			error: null,
+			content: [],
+			progress: 0,
+			total: 0,
 		},
 	}
 };

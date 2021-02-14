@@ -103,12 +103,12 @@ type ExternalProps = {
 	appActions: AppAction,
 }
 
-const mapStateToProps = (state: ReduxGlobalState, ownProps: ExternalProps) => ({
-	length: getSplitCount(state, ownProps.branchIndex),
+const mapStateToProps = (state: ReduxGlobalState, { branchIndex }: ExternalProps) => ({
+	length: getSplitCount(state, branchIndex),
 	editing: isEditingNav(state),
-	isLastBranch: getBranchCount(state) === ownProps.branchIndex + 1,
-	currentBranchName: getBranchName(state, ownProps.branchIndex),
-	nextBranchName: ownProps.branchIndex === getBranchCount(state) - 1 ? undefined : getBranchName(state, ownProps.branchIndex + 1),
+	isLastBranch: getBranchCount(state) === branchIndex + 1,
+	currentBranchName: getBranchName(state, branchIndex),
+	nextBranchName: branchIndex === getBranchCount(state) - 1 ? undefined : getBranchName(state, branchIndex + 1),
 	copiedSplit: getSplitClipboard(state),
 });
 

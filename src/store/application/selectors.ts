@@ -75,6 +75,14 @@ export function getResourcesBounds(state: ReduxGlobalState): Bounds {
 	return getLayout(state).resources;
 }
 
+export function getResourcesHeaderBounds(state: ReduxGlobalState): Bounds {
+	return getLayout(state).resources.header;
+}
+
+export function getResourcesMainBounds(state: ReduxGlobalState): Bounds {
+	return getLayout(state).resources.main;
+}
+
 export function isEditingNav(state: ReduxGlobalState): boolean {
 	return getApplicationState(state).editingNav;
 }
@@ -89,4 +97,8 @@ export function isEditingItems(state: ReduxGlobalState): boolean {
 
 export function getSplitClipboard(state: ReduxGlobalState): RouteSplit | undefined {
 	return getApplicationState(state).splitClipboard;
+}
+
+export function getItemsInfo(state: ReduxGlobalState): string {
+	return getApplicationState(state).itemsInfo;
 }

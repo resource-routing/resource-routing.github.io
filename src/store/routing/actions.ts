@@ -17,4 +17,9 @@ export const {
 	swapSplits,
 	moveFirstSplitToPreviousBranch,
 	moveLastSplitToNextBranch,
+	createItem,
+	setItemName,
+	setItemColor,
+	swapItems,
+	deleteItem,
 } = actions;

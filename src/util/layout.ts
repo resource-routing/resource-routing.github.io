@@ -50,8 +50,6 @@ export type LayoutOption = {
 }
 
 export default function layout({ sideCollapsed, actionsCollapsed, headerCollapsed, shrink, noResources }: LayoutOption): Layout {
-	//const resourceCollapsed = false;
-	// const sideCollapsed = true;
 
 	const windowWidth = "100vw";
 	const windowHeight = "100vh";
@@ -68,23 +66,12 @@ export default function layout({ sideCollapsed, actionsCollapsed, headerCollapse
 	const SIDE_HEADER_HEIGHT = "2rem";
 
 	const RESOURCE_MIN_HEIGHT = "12rem";
-	const RESOURCE_HEIGHT = "20%";
+	const RESOURCE_HEIGHT = "30%";
 	const RESOURCE_WIDTH_SHRINK = "24rem";
 	const RESOURCE_COLLAPSE_HEIGHT = "1.8rem";
 	const RESOURCE_HEADER_HEIGHT = "3.2rem";
 
 	const ACTION_MIN_WIDTH = "50rem";
-
-	//const SHRINK_SIDE_WHEN_LESS_THAN = 1550;
-	//const shrink = window.innerWidth < SHRINK_SIDE_WHEN_LESS_THAN
-
-	//const HIDE_RESOURCES_WHEN_LESS_THAN = 700;
-	//const noResources = window.innerWidth < HIDE_RESOURCES_WHEN_LESS_THAN
-
-	// const NO_HEADER_WHEN_LESS_THAN = 1000;
-	// if (window.innerWidth < NO_HEADER_WHEN_LESS_THAN) {
-	// 	headerCollapsed = true;
-	// }
 
 	const headerHeight = headerCollapsed ? HEADER_HEIGHT : HEADER_EXPAND_HEIGHT;
 	const centerHeight = calc(windowHeight, "-", headerHeight, "-", FOOTER_HEIGHT);

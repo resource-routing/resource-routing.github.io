@@ -1,6 +1,5 @@
 import { RouteBranch } from "data/branch";
 import { RouteItem } from "data/item";
-import { RouteResources } from "data/object";
 
 export type RouteState = {
 	projectName: string,
@@ -8,6 +7,5 @@ export type RouteState = {
 	activeSplit: number,
 	activeAction: number,
 	branches: RouteBranch[],
-	resources: RouteResources,
 	items: RouteItem[],
 }

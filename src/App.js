@@ -20,6 +20,7 @@ import {
 import { connect } from "react-redux";
 import { bindActionCreators } from "@reduxjs/toolkit";
 import Alert from "dialog/Alert";
+import Items from "sections/Items";
 
 
 class App extends React.Component {
@@ -421,17 +422,9 @@ class App extends React.Component {
 				</Box>
 				{!resourcesHidden &&
 					<Box layout={resourcesBounds} borderClass="border">
-
-						{/* <Items
-              layout={this.state.dimensions.resources}
-              actions={actions}
-              resourcesCollapsed={this.state.resourcesCollapsed}
-              sideCollapsed={this.state.sideCollapsed}
-              items={this.state.items}
-              actionResources={actionResources}
-              lastActionResources={lastActionResources}
-            /> */}
-					</Box>}
+						<Items appActions={appActions} />
+					</Box>
+				}
 				<Alert content={this.state.alertContent} alertActions={this.state.alertActions} actions={{
 					hideAlert: () => this.showAlert()
 				}} />
