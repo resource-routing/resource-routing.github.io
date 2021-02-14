@@ -12,7 +12,7 @@ type DeltaItemString = string;
 type CompressedDeltaItemString = string;
 
 
-export function renameItemInDelta(deltas: ActionDelta, oldName: string, newName: string) {
+export function renameItemInDelta(deltas: ActionDelta, oldName: string, newName: string): void {
 	for (const name in deltas) {
 		if (deltas[name].type.startsWith("ref")) {
 			if (deltas[name].value === oldName) {

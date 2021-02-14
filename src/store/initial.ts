@@ -1,4 +1,4 @@
-import { defaultLayout } from "../util/layout";
+import { defaultLayout } from "util/layout";
 export default {
 	routeState: {
 		projectName: "Test Project Name",
@@ -109,9 +109,12 @@ export default {
 		editingActions: false,
 		editingItems: false,
 		info: "",
-		alert: {
-			text: undefined,
-			actions: {},
-		}
+		splitClipboard: {
+			name: "clip",
+			expanded: false,
+			mapX: 0,
+			mapY: 0,
+			actions: [],
+		},
 	}
 };

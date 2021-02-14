@@ -10,6 +10,5 @@ export const {
 	setEditingActions,
 	setEditingItems,
 	setInfo,
-	showAlert,
-	hideAlert,
+	setSplitClipboard,
 } = actions;

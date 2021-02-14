@@ -19,10 +19,17 @@ import {
 } from "store/application/actions";
 import { connect } from "react-redux";
 import { bindActionCreators } from "@reduxjs/toolkit";
-import Alert from "components/Alert";
+import Alert from "dialog/Alert";
 
 
 class App extends React.Component {
+	constructor(props) {
+		super(props);
+		this.state = {
+			alertContent: undefined,
+			alertActions: [],
+		};
+	}
 
 	componentDidMount() {
 		window.addEventListener("resize", this.redoLayout.bind(this));
@@ -41,6 +48,13 @@ class App extends React.Component {
 		// if (this.state.resourceUpdateHandle) {
 		//   window.clearTimeout(this.state.resourceUpdateHandle);
 		// }
+	}
+
+	showAlert(content = undefined, actions = [{ name: "OK" }]) {
+		this.setState({
+			alertContent: content,
+			alertActions: actions,
+		});
 	}
 
 
@@ -334,24 +348,8 @@ class App extends React.Component {
 		//   return null;
 		// }
 
-		const actions = {
-			// setSideCollapsed: this.setSideCollapsed.bind(this),
-			// setResourcesCollapsed: this.setResourcesCollapsed.bind(this),
-			// setHeaderCollapsed: this.setHeaderCollapsed.bind(this),
-			// setInformation: this.setInformation.bind(this),
-			// setAutoSave: this.setAutoSave.bind(this),
-			// displayAlert: this.displayAlert.bind(this),
-			// hideAlert: this.hideAlert.bind(this),
-			// saveStateToLocalStorage: this.saveStateToLocalStorage.bind(this),
-			// download: this.downloadStateToFile.bind(this),
-			// setProjectName: this.setProjectName.bind(this),
-			// loadStoredState: this.loadStoredState.bind(this),
-			// recalculateResources: this.recalculateResources.bind(this),
-			// doToBranches: this.doToBranches.bind(this),
-			// copySplit: (split) => this.setState({ splitClipboard: sanitizeSplit(split), info: "Split copied." }),
-			// splitClipboard: this.state.splitClipboard,
-			// openSplit: this.openSplit.bind(this),
-			// doToItems: this.doToItems.bind(this),
+		const appActions = {
+			showAlert: this.showAlert.bind(this),
 		};
 
 		// const showAction = this.state.activeBranch >= 0 &&
@@ -401,13 +399,13 @@ class App extends React.Component {
 				height: "100vh"
 			}}>
 				<Box layout={headerBounds} borderClass="border overflow-hidden">
-					<Header />
+					<Header appActions={appActions} />
 				</Box>
 				<Box layout={sideBounds} borderClass="border">
-					<SideNav />
+					<SideNav appActions={appActions} />
 				</Box>
 				<Box layout={footerBounds} borderClass="border">
-					<Footer />
+					<Footer appActions={appActions} />
 				</Box>
 				<Box layout={mapBounds}>
 					{/* {this.state.map && < iframe id="object_map" src={`https://objmap.zeldamods.org/#/map/z${this.state.map.z},${this.state.map.x},${this.state.map.y}`} title="Object Map" width="100%" height="100%"></iframe>} */}
@@ -434,7 +432,9 @@ class App extends React.Component {
               lastActionResources={lastActionResources}
             /> */}
 					</Box>}
-				<Alert />
+				<Alert content={this.state.alertContent} alertActions={this.state.alertActions} actions={{
+					hideAlert: () => this.showAlert()
+				}} />
 			</div>
 		);
 	}

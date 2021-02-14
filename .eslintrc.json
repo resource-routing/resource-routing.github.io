@@ -36,11 +36,11 @@
             "unix"
         ],
         "quotes": [
-            "error",
+            "warn",
             "double"
         ],
         "semi": [
-            "error",
+            "warn",
             "always"
         ],
         "@typescript-eslint/ban-types": [

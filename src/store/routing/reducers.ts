@@ -1,13 +1,19 @@
 import { PayloadAction } from "@reduxjs/toolkit";
-import { BRANCH_LIMIT } from "data/limit";
-import { newBranch } from "data/object";
+import { newBranch } from "data/branch";
+import { BRANCH_LIMIT, SPLIT_LIMIT } from "data/limit";
+import { cloneSplit, newSplit, RouteSplit } from "data/split";
 import { ReduxGlobalState } from "store/store";
-import { benchmarkDelta, benchmarkTime } from "util/benchmark";
-import { getActiveBranch, getBranchCount, getBranchName } from "./selectors";
+import { getActiveBranch, getActiveSplit, getBranchCount, getSplitCount } from "./selectors";
 
-// const message: React.FunctionComponent<{ text: string }> = ({ text }: { text: string }) => {
-// 	return React.createElement("span", undefined, text);
-// }
+function validateBranch(state: ReduxGlobalState, branchIndex: number): boolean {
+	const branchLength = getBranchCount(state);
+	return branchIndex >= 0 && branchIndex < branchLength;
+}
+
+function validateSplit(state: ReduxGlobalState, branchIndex: number, splitIndex: number): boolean {
+	if (!validateBranch(state, branchIndex)) return false;
+	return splitIndex >= 0 && splitIndex < getSplitCount(state, branchIndex);
+}
 
 export default {
 	setActiveBranchAndSplit(state: ReduxGlobalState, action: PayloadAction<{ activeBranch: number, activeSplit: number }>): void {
@@ -18,19 +24,13 @@ export default {
 		state.routeState.activeAction = action.payload.activeAction;
 	},
 	createBranch(state: ReduxGlobalState, action: PayloadAction<{ branchIndex: number }>): void {
-		const startTime = benchmarkTime();
 		const { branchIndex } = action.payload;
 		const branchLength = getBranchCount(state);
 		if (branchLength >= BRANCH_LIMIT) {
-			state.applicationState.alert.text = `Branch limit exceeded (${BRANCH_LIMIT})`;
-			state.applicationState.alert.actions = {
-				"OK": undefined
-			};
-			state.applicationState.info = "Branch limit exceeded";
 			return;
 		}
 		const branch = newBranch();
-		if (branchIndex >= branchLength) {
+		if (!validateBranch(state, branchIndex)) {
 			state.routeState.branches.push(branch);
 		} else {
 			state.routeState.branches.splice(branchIndex, 0, branch);
@@ -39,7 +39,6 @@ export default {
 				state.routeState.activeBranch = activeBranch + 1;
 			}
 		}
-		state.applicationState.info = `Branch created. (${benchmarkDelta(startTime)} ms)`;
 	},
 	setBranchName(state: ReduxGlobalState, action: PayloadAction<{ branchIndex: number, name: string }>): void {
 		const { branchIndex, name } = action.payload;
@@ -49,15 +48,7 @@ export default {
 		const { branchIndex, expanded } = action.payload;
 		state.routeState.branches[branchIndex].expanded = expanded;
 	},
-	promptDeleteBranch(state: ReduxGlobalState, action: PayloadAction<{ branchIndex: number }>): void {
-		const { branchIndex } = action.payload;
-		state.applicationState.alert.text = `Delete branch "${getBranchName(state, branchIndex)}"? This also deletes all splits in the branch. This is NOT reversible!`;
-		state.applicationState.alert.actions = {
-			"Cancel": undefined,
-		};
-	},
 	deleteBranch(state: ReduxGlobalState, action: PayloadAction<{ branchIndex: number }>): void {
-		const startTime = benchmarkTime();
 		const { branchIndex } = action.payload;
 		state.routeState.branches.splice(branchIndex, 1);
 		const activeBranch = getActiveBranch(state);
@@ -66,6 +57,163 @@ export default {
 		} else if (activeBranch > branchIndex) {
 			state.routeState.activeBranch = activeBranch - 1;
 		}
-		state.applicationState.info = `Branch deleted. (${benchmarkDelta(startTime)} ms)`;
+	},
+	swapBranches(state: ReduxGlobalState, action: PayloadAction<{ i: number, j: number }>): void {
+		const { i, j } = action.payload;
+		if (!validateBranch(state, i) || !validateBranch(state, j)) {
+			return;
+		}
+		const temp = state.routeState.branches[i];
+		state.routeState.branches[i] = state.routeState.branches[j];
+		state.routeState.branches[j] = temp;
+		const activeBranch = getActiveBranch(state);
+		if (activeBranch === i) {
+			state.routeState.activeBranch = j;
+		} else if (activeBranch === j) {
+			state.routeState.activeBranch = i;
+		}
+	},
+	mergeNextIntoBranch(state: ReduxGlobalState, action: PayloadAction<{ branchIndex: number }>): void {
+		const { branchIndex } = action.payload;
+		const branchLength = getBranchCount(state);
+		if (branchIndex === branchLength - 1 || !validateBranch(state, branchIndex)) {
+			return;
+		}
+		const oldSplitSize = getSplitCount(state, branchIndex);
+		const nextSplitSize = getSplitCount(state, branchIndex + 1);
+		if (oldSplitSize + nextSplitSize >= SPLIT_LIMIT) {
+			return;
+		}
+		state.routeState.branches[branchIndex].splits = state.routeState.branches[branchIndex].splits.concat(state.routeState.branches[branchIndex + 1].splits);
+		state.routeState.branches.splice(branchIndex + 1, 1);
+		const activeBranch = getActiveBranch(state);
+		if (activeBranch === branchIndex + 1) {
+			state.routeState.activeBranch = activeBranch - 1;
+			state.routeState.activeSplit += oldSplitSize;
+		}
+	},
+	breakBranchAt(state: ReduxGlobalState, action: PayloadAction<{ branchIndex: number, splitIndex: number }>): void {
+		const branchLength = getBranchCount(state);
+		if (branchLength >= BRANCH_LIMIT) {
+			return;
+		}
+		const { branchIndex, splitIndex } = action.payload;
+		if (!validateSplit(state, branchIndex, splitIndex)) {
+			return;
+		}
+		const hiSplits = state.routeState.branches[branchIndex].splits.slice(splitIndex);
+		state.routeState.branches[branchIndex].splits = state.routeState.branches[branchIndex].splits.slice(0, splitIndex);
+		const branch = newBranch();
+		branch.expanded = true;
+		branch.splits = hiSplits;
+		state.routeState.branches.splice(branchIndex + 1, 0, branch);
+		const activeBranch = getActiveBranch(state);
+		const activeSplit = getActiveSplit(state);
+		if (activeBranch === branchIndex && activeSplit >= splitIndex) {
+			state.routeState.activeBranch = activeBranch + 1;
+			state.routeState.activeSplit -= splitIndex;
+		}
+	},
+	createSplit(state: ReduxGlobalState, action: PayloadAction<{ branchIndex: number, splitIndex: number, templateSplit?: RouteSplit }>): void {
+		const { branchIndex, splitIndex, templateSplit } = action.payload;
+		if (!validateBranch(state, branchIndex)) {
+			return;
+		}
+		const splitLength = getSplitCount(state, branchIndex);
+		if (splitLength >= SPLIT_LIMIT) {
+			return;
+		}
+		const split = templateSplit ? cloneSplit(templateSplit) : newSplit();
+		if (!validateSplit(state, branchIndex, splitIndex)) {
+			state.routeState.branches[branchIndex].splits.push(split);
+		} else {
+			state.routeState.branches[branchIndex].splits.splice(splitIndex, 0, split);
+			if (getActiveBranch(state) === branchIndex) {
+				const activeSplit = getActiveSplit(state);
+				if (activeSplit >= splitIndex) {
+					state.routeState.activeSplit = activeSplit + 1;
+				}
+			}
+		}
+	},
+	setSplitName(state: ReduxGlobalState, action: PayloadAction<{ branchIndex: number, splitIndex: number, name: string }>): void {
+		const { branchIndex, splitIndex, name } = action.payload;
+		state.routeState.branches[branchIndex].splits[splitIndex].name = name;
+	},
+	setSplitExpanded(state: ReduxGlobalState, action: PayloadAction<{ branchIndex: number, splitIndex: number, expanded: boolean }>): void {
+		const { branchIndex, splitIndex, expanded } = action.payload;
+		state.routeState.branches[branchIndex].splits[splitIndex].expanded = expanded;
+	},
+	deleteSplit(state: ReduxGlobalState, action: PayloadAction<{ branchIndex: number, splitIndex: number }>): void {
+		const { branchIndex, splitIndex } = action.payload;
+		if (!validateSplit(state, branchIndex, splitIndex)) {
+			return;
+		}
+		state.routeState.branches[branchIndex].splits.splice(splitIndex, 1);
+		if (getActiveBranch(state) === branchIndex) {
+			const activeSplit = getActiveSplit(state);
+			if (activeSplit === splitIndex) {
+				state.routeState.activeSplit = -1;
+			} else if (activeSplit > splitIndex) {
+				state.routeState.activeSplit = activeSplit - 1;
+			}
+		}
+	},
+	swapSplits(state: ReduxGlobalState, action: PayloadAction<{ branchIndex: number, i: number, j: number }>): void {
+		const { branchIndex, i, j } = action.payload;
+		if (!validateSplit(state, branchIndex, i) || !validateSplit(state, branchIndex, j)) {
+			return;
+		}
+		const temp = state.routeState.branches[branchIndex].splits[i];
+		state.routeState.branches[branchIndex].splits[i] = state.routeState.branches[branchIndex].splits[j];
+		state.routeState.branches[branchIndex].splits[j] = temp;
+		if (getActiveBranch(state) === branchIndex) {
+			const activeSplit = getActiveSplit(state);
+			if (activeSplit === i) {
+				state.routeState.activeSplit = j;
+			} else if (activeSplit === j) {
+				state.routeState.activeSplit = i;
+			}
+		}
+	},
+	moveFirstSplitToPreviousBranch(state: ReduxGlobalState, action: PayloadAction<{ branchIndex: number }>): void {
+		const { branchIndex } = action.payload;
+		if (!validateBranch(state, branchIndex) || !validateBranch(state, branchIndex - 1)) {
+			return;
+		}
+		if (getSplitCount(state, branchIndex) <= 0) {
+			return;
+		}
+		const movedSplitIndex = getSplitCount(state, branchIndex - 1);
+		state.routeState.branches[branchIndex - 1].splits.push(state.routeState.branches[branchIndex].splits[0]);
+		state.routeState.branches[branchIndex].splits.splice(0, 1);
+		if (getActiveBranch(state) === branchIndex) {
+			if (getActiveSplit(state) === 0) {
+				state.routeState.activeBranch = branchIndex - 1;
+				state.routeState.activeSplit = movedSplitIndex;
+			} else {
+				state.routeState.activeSplit -= 1;
+			}
+		}
+	},
+	moveLastSplitToNextBranch(state: ReduxGlobalState, action: PayloadAction<{ branchIndex: number }>): void {
+		const { branchIndex } = action.payload;
+		if (!validateBranch(state, branchIndex) || !validateBranch(state, branchIndex + 1)) {
+			return;
+		}
+		if (getSplitCount(state, branchIndex) <= 0) {
+			return;
+		}
+		const beforeMoveIndex = getSplitCount(state, branchIndex) - 1;
+		state.routeState.branches[branchIndex + 1].splits.splice(0, 0, state.routeState.branches[branchIndex].splits[beforeMoveIndex]);
+		state.routeState.branches[branchIndex].splits.pop();
+		if (getActiveBranch(state) === branchIndex) {
+			if (getActiveSplit(state) === beforeMoveIndex) {
+				state.routeState.activeBranch = branchIndex + 1;
+				state.routeState.activeSplit = 0;
+			}
+		} else if (getActiveBranch(state) === branchIndex + 1) {
+			state.routeState.activeSplit += 1;
+		}
 	}
 };

@@ -1,9 +1,9 @@
 export type millisecond = number;
 
-export function benchmarkTime(): millisecond {
+export function benchStart(): millisecond {
 	return new Date().getTime();
 }
 
-export function benchmarkDelta(start: millisecond): millisecond {
+export function benchEnd(start: millisecond): millisecond {
 	return new Date().getTime() - start;
 }

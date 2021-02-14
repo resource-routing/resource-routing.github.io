@@ -1,64 +1,13 @@
-import { DeltaString, DeltaError, ActionDelta, stringToDelta } from "./delta";
-
+import { BranchData, RouteBranch, deflateRouteBranch, inflateBranchData } from "./branch";
+import { ItemData, RouteItem, deflateRouteItem, inflateItemData } from "./item";
+import { RouteState } from "store/routing/type";
 export type RouteData = {
 	projectName: string,
 	branches: BranchData[],
 	items: ItemData[],
 }
 
-export type BranchData = {
-	name: string,
-	splits: SplitData[],
-}
 
-export type SplitData = {
-	name: string,
-	mapX: number,
-	mapY: number,
-	actions: ActionData[],
-}
-
-export type ActionData = {
-	name: string,
-	deltaString: DeltaString,
-}
-
-export type ItemData = {
-	name: string,
-	color: string,
-}
-
-export type RouteState = {
-	projectName: string,
-	activeBranch: number,
-	activeSplit: number,
-	activeAction: number,
-	branches: RouteBranch[],
-	resources: RouteResources,
-	items: RouteItem[],
-}
-
-export type RouteBranch = {
-	name: string,
-	expanded: boolean,
-	splits: RouteSplit[],
-}
-
-export type RouteSplit = {
-	name: string,
-	expanded: boolean,
-	mapX: number,
-	mapY: number,
-	actions: RouteAction[],
-}
-
-export type RouteAction = {
-	name: string,
-	expanded: boolean,
-	deltaString: DeltaString,
-	deltaError: DeltaError,
-	deltas: ActionDelta | null,
-}
 
 export type RouteResources = {
 	error: ResourceError,
@@ -76,11 +25,6 @@ export type ActionResource = Record<string, ActionResourceItem>
 export type ActionResourceItem = {
 	value: number,
 	change: number,
-}
-
-export type RouteItem = {
-	name: string,
-	color: string,
 }
 
 export function deflateRouteState(state: RouteState): RouteData {
@@ -106,77 +50,10 @@ export function inflateRouteData(data: RouteData): RouteState {
 	};
 }
 
-export function newBranch(): RouteBranch {
-	return {
-		name: "",
-		expanded: true,
-		splits: [],
-	};
-}
 
-function deflateRouteBranch(branch: RouteBranch): BranchData {
-	return {
-		name: branch.name || "",
-		splits: (branch.splits || []).map(deflateRouteSplit)
-	};
-}
 
-function inflateBranchData(branch: BranchData): RouteBranch {
-	return {
-		name: branch.name || "",
-		expanded: false,
-		splits: (branch.splits || []).map(inflateSplitData),
-	};
-}
 
-function deflateRouteItem(item: RouteItem): ItemData {
-	return {
-		name: item.name || "",
-		color: item.color || "",
-	};
-}
 
-function inflateItemData(item: ItemData): RouteItem {
-	return {
-		name: item.name || "",
-		color: item.color || "",
-	};
-}
 
-function deflateRouteSplit(split: RouteSplit): SplitData {
-	return {
-		name: split.name || "",
-		actions: (split.actions || []).map(deflateRouteAction),
-		mapX: split.mapX || 0,
-		mapY: split.mapY || 0,
-	};
-}
 
-function inflateSplitData(split: SplitData): RouteSplit {
-	return {
-		name: split.name || "",
-		expanded: false,
-		actions: (split.actions || []).map(inflateActionData),
-		mapX: split.mapX || 0,
-		mapY: split.mapY || 0,
-	};
-}
 
-function deflateRouteAction(action: RouteAction): ActionData {
-	return {
-		name: action.name || "",
-		deltaString: action.deltaString || "",
-	};
-}
-
-function inflateActionData(action: ActionData): RouteAction {
-	const [deltas, error] = stringToDelta(action.deltaString);
-	const routeAction = {
-		name: action.name || "",
-		deltaString: action.deltaString || "",
-		expanded: false,
-		deltas,
-		deltaError: error
-	};
-	return routeAction;
-}

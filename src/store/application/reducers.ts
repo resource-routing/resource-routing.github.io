@@ -1,7 +1,8 @@
-import { ActionCreatorWithoutPayload, PayloadAction } from "@reduxjs/toolkit";
+import { PayloadAction } from "@reduxjs/toolkit";
 import layout, { LayoutOption } from "util/layout";
 import { ReduxGlobalState } from "store/store";
 import { isResourcesSectionHidden, isSideSectionShrunk, isHeaderCollapsed, isSideSectionCollapsed, isActionSectionCollapsed } from "./selectors";
+import { RouteSplit } from "data/split";
 
 function layoutOption(state: ReduxGlobalState): LayoutOption {
 	return {
@@ -66,12 +67,7 @@ export default {
 	setInfo(state: ReduxGlobalState, action: PayloadAction<{ info: string }>): void {
 		state.applicationState.info = action.payload.info;
 	},
-	showAlert(state: ReduxGlobalState, action: PayloadAction<{ text: string | undefined, actions: Record<string, ActionCreatorWithoutPayload> }>): void {
-		state.applicationState.alert.text = action.payload.text;
-		state.applicationState.alert.actions = action.payload.actions;
-	},
-	hideAlert(state: ReduxGlobalState): void {
-		state.applicationState.alert.text = undefined;
-		state.applicationState.alert.actions = {};
+	setSplitClipboard(state: ReduxGlobalState, action: PayloadAction<{ split: RouteSplit }>): void {
+		state.applicationState.splitClipboard = action.payload.split;
 	}
 };

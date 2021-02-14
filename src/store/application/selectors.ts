@@ -1,6 +1,7 @@
 import { Layout, Bounds } from "util/layout";
-import { ApplicationState, ReduxGlobalState } from "store/store";
-import { ActionCreatorWithoutPayload } from "@reduxjs/toolkit";
+import { ReduxGlobalState } from "store/store";
+import { ApplicationState } from "./type";
+import { RouteSplit } from "data/split";
 
 function getApplicationState(state: ReduxGlobalState): ApplicationState {
 	return state.applicationState;
@@ -86,14 +87,6 @@ export function isEditingItems(state: ReduxGlobalState): boolean {
 	return getApplicationState(state).editingItems;
 }
 
-export function isAlertDisplayed(state: ReduxGlobalState): boolean {
-	return getApplicationState(state).alert.text === undefined;
-}
-
-export function getAlertText(state: ReduxGlobalState): string | undefined {
-	return getApplicationState(state).alert.text;
-}
-
-export function getAlertActions(state: ReduxGlobalState): Record<string, ActionCreatorWithoutPayload | undefined> {
-	return getApplicationState(state).alert.actions;
+export function getSplitClipboard(state: ReduxGlobalState): RouteSplit | undefined {
+	return getApplicationState(state).splitClipboard;
 }

@@ -1,4 +1,5 @@
-import { ReduxGlobalState, SettingState } from "store/store";
+import { ReduxGlobalState } from "store/store";
+import { SettingState } from "./type";
 
 export function getSettingState(state: ReduxGlobalState): SettingState {
 	return state.settingState;

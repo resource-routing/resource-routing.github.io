@@ -1,5 +1,9 @@
+import { RouteAction } from "data/action";
+import { RouteBranch } from "data/branch";
 import { DeltaString, DeltaError, ActionDelta } from "data/delta";
-import { RouteBranch, RouteState, RouteSplit, RouteAction, RouteItem } from "data/object";
+import { RouteItem } from "data/item";
+import { RouteState } from "./type";
+import { RouteSplit } from "data/split";
 import { ReduxGlobalState } from "store/store";
 
 export function getRouteState(state: ReduxGlobalState): RouteState {
@@ -94,7 +98,7 @@ function getSplits(state: ReduxGlobalState, branchIndex: number): RouteSplit[] {
 	return getBranch(state, branchIndex).splits;
 }
 
-function getSplit(state: ReduxGlobalState, branchIndex: number, splitIndex: number): RouteSplit {
+export function getSplit(state: ReduxGlobalState, branchIndex: number, splitIndex: number): RouteSplit {
 	return getSplits(state, branchIndex)[splitIndex];
 }
 
@@ -143,3 +147,4 @@ function getItemByName(state: ReduxGlobalState, name: string): RouteItem | undef
 export function getItemColor(state: ReduxGlobalState, name: string): string | undefined {
 	return getItemByName(state, name)?.color;
 }
+
