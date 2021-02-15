@@ -243,18 +243,6 @@ class App extends React.Component {
 	//   }
 	// }
 
-	// calculateDimensions() {
-	//   const dimensions = layout(this.state.sideCollapsed, this.state.resourcesCollapsed, this.state.headerCollapsed);
-	//   this.setState({ dimensions });
-	// }
-
-
-
-
-	// setInformation(info) {
-	//   this.setState({ info });
-	// }
-
 	// setProjectName(name) {
 	//   this.setState({
 	//     projectName: name
@@ -297,26 +285,6 @@ class App extends React.Component {
 	//   })
 	// }
 
-	// displayAlert(text, okText, onOk, cancelText, onCancel) {
-	//   this.setState({
-	//     displayAlert: true,
-	//     onAlertOk: onOk,
-	//     onAlertCancel: onCancel,
-	//     alertOkText: okText,
-	//     alertCancelText: cancelText,
-	//     alertText: text,
-	//   });
-	// }
-
-	// hideAlert() {
-	//   this.setState({
-	//     displayAlert: false,
-	//     onAlertOk: undefined,
-	//     onAlertCancel: undefined,
-	//     alertOkText: undefined,
-	//     alertCancelText: undefined
-	//   })
-	// }
 
 	// downloadStateToFile() {
 	//   downloadToFile(this.getStateToStore());

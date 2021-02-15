@@ -1,4 +1,4 @@
-import { connect } from "react-redux";
+import { connect, ConnectedProps } from "react-redux";
 import ExpandButton from "../ExpandButton";
 import SplitList from "components/split/SplitList";
 import {
@@ -24,23 +24,33 @@ import { AppAction } from "apptype";
 import { ReduxGlobalState } from "store/store";
 import { BRANCH_LIMIT } from "data/limit";
 
-type Props = {
+type ExternalProps = {
 	index: number,
-	name: string,
-	expanded: boolean,
-	editing: boolean,
-	actions: {
-		createBranch: ActionCreatorWithPayload<{ branchIndex: number }>,
-		setBranchName: ActionCreatorWithPayload<{ branchIndex: number, name: string }>,
-		setBranchExpanded: ActionCreatorWithPayload<{ branchIndex: number, expanded: boolean }>,
-		deleteBranch: ActionCreatorWithPayload<{ branchIndex: number }>,
-		setInfo: ActionCreatorWithPayload<{ info: string }>,
-		swapBranches: ActionCreatorWithPayload<{ i: number, j: number }>,
-		setEditingNav: ActionCreatorWithPayload<{ editing: boolean }>,
-	},
-	branchCount: number,
 	appActions: AppAction,
 }
+
+const mapStateToProps = (state: ReduxGlobalState, { index }: ExternalProps) => ({
+	name: getBranchName(state, index),
+	expanded: isBranchExpanded(state, index),
+	editing: isEditingNav(state),
+	branchCount: getBranchCount(state),
+});
+
+const mapDispatchToProps = (dispatch: Dispatch) => ({
+	actions: bindActionCreators({
+		createBranch,
+		setBranchName,
+		setBranchExpanded,
+		deleteBranch,
+		setInfo,
+		swapBranches,
+		setEditingNav,
+	}, dispatch)
+});
+
+const connector = connect(mapStateToProps, mapDispatchToProps);
+
+type Props = ConnectedProps<typeof connector> & ExternalProps;
 
 export const Branch: React.FunctionComponent<Props> = ({ index, name, expanded, editing, actions, branchCount, appActions }: Props) => {
 	const displayName = name || "[Unnamed Branch]";
@@ -140,28 +150,4 @@ export const Branch: React.FunctionComponent<Props> = ({ index, name, expanded, 
 
 };
 
-type ExternalProps = {
-	index: number,
-	appActions: AppAction,
-}
-
-const mapStateToProps = (state: ReduxGlobalState, { index }: ExternalProps) => ({
-	name: getBranchName(state, index),
-	expanded: isBranchExpanded(state, index),
-	editing: isEditingNav(state),
-	branchCount: getBranchCount(state),
-});
-
-const mapDispatchToProps = (dispatch: Dispatch) => ({
-	actions: bindActionCreators({
-		createBranch,
-		setBranchName,
-		setBranchExpanded,
-		deleteBranch,
-		setInfo,
-		swapBranches,
-		setEditingNav,
-	}, dispatch)
-});
-
-export default connect(mapStateToProps, mapDispatchToProps)(Branch);
+export default connector(Branch);

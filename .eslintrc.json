@@ -25,7 +25,7 @@
     ],
     "rules": {
         "indent": [
-            "error",
+            "warn",
             "tab",
             {
                 "SwitchCase": 1
@@ -42,6 +42,39 @@
         "semi": [
             "warn",
             "always"
+        ],
+        "no-multiple-empty-lines": [
+            "warn",
+            {
+                "max": 1
+            }
+        ],
+        "no-console": [
+            "warn",
+            {
+                "allow": [
+                    "error"
+                ]
+            }
+        ],
+        "no-extra-parens": [
+            "warn"
+        ],
+        "no-unreachable-loop": [
+            "error"
+        ],
+        "curly": [
+            "warn",
+            "all"
+        ],
+        "dot-notation": [
+            "warn",
+            {
+                "allowKeywords": false
+            }
+        ],
+        "camelcase": [
+            "warn"
         ],
         "@typescript-eslint/ban-types": [
             "error",

@@ -22,4 +22,5 @@ export const {
 	setItemColor,
 	swapItems,
 	deleteItem,
+	createAction,
 } = actions;

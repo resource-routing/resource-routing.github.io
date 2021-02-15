@@ -64,46 +64,4 @@ const Alert: React.FunctionComponent<Props> = ({ content, alertActions, actions 
 	);
 };
 
-// const mapStateToProps = (state: ReduxGlobalState) => ({
-// 	text: getAlertText(state),
-// 	alertActions: getAlertActions(state),
-// });
-
-// const mapDispatchToProps = (dispatch: Dispatch) => ({
-// 	actions: bindActionCreators({
-// 		hideAlert,
-// 	}, dispatch),
-// 	dispatch
-// });
-
-// const mergeProps = (stateProps: {
-// 	text: string | undefined,
-// 	alertActions: Record<string, ActionCreatorWithoutPayload | undefined>,
-// }, dispatchProps: {
-// 	dispatch: Dispatch,
-// 	actions: {
-// 		hideAlert: ActionCreatorWithoutPayload
-// 	}
-// }) => ({
-// 	show: stateProps.text !== undefined,
-// 	text: stateProps.text,
-// 	alertActions: (() => {
-// 		const alertActionCreators = stateProps.alertActions;
-// 		const array = [];
-// 		for (const actionName in alertActionCreators) {
-// 			array.push({
-// 				name: actionName,
-// 				execute: () => {
-// 					const actionCreator = alertActionCreators[actionName];
-// 					if (actionCreator !== undefined) {
-// 						dispatchProps.dispatch(actionCreator());
-// 					}
-// 				},
-// 			});
-// 		}
-// 		return array;
-// 	})(),
-// 	actions: dispatchProps.actions,
-// });
-
 export default Alert;

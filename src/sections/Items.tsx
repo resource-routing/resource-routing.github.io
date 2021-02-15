@@ -8,21 +8,31 @@ import { getItemsInfo, getResourcesHeaderBounds, getResourcesMainBounds, isActio
 import { setItemFilter } from "store/setting/actions";
 import { getItemFilter } from "store/setting/selectors";
 import { setEditingItems } from "store/application/actions";
-import { connect } from "react-redux";
+import { connect, ConnectedProps } from "react-redux";
 
-type Props = {
-	itemMainBounds: Bounds,
-	itemHeaderBounds: Bounds,
-	resourcesCollapsed: boolean,
-	itemsInfo: string,
-	actions: {
-		setEditingItems: ActionCreatorWithPayload<{ editing: boolean }>,
-		setItemFilter: ActionCreatorWithPayload<{ filter: string }>,
-	},
-	editing: boolean,
+type ExternalProps = {
 	appActions: AppAction,
-	filterString: string,
 }
+
+const mapStateToProps = (state: ReduxGlobalState) => ({
+	itemMainBounds: getResourcesMainBounds(state),
+	itemHeaderBounds: getResourcesHeaderBounds(state),
+	resourcesCollapsed: isActionSectionCollapsed(state),
+	itemsInfo: getItemsInfo(state),
+	editing: isEditingItems(state),
+	filterString: getItemFilter(state),
+});
+
+const mapDispatchToProps = (dispatch: Dispatch) => ({
+	actions: bindActionCreators({
+		setEditingItems,
+		setItemFilter,
+	}, dispatch)
+});
+
+const connector = connect(mapStateToProps, mapDispatchToProps);
+
+type Props = ConnectedProps<typeof connector> & ExternalProps;
 
 const Items: React.FunctionComponent<Props> = ({
 	itemMainBounds, itemHeaderBounds, resourcesCollapsed, itemsInfo, editing, actions, appActions, filterString
@@ -67,22 +77,8 @@ const Items: React.FunctionComponent<Props> = ({
 	);
 };
 
-const mapStateToProps = (state: ReduxGlobalState) => ({
-	itemMainBounds: getResourcesMainBounds(state),
-	itemHeaderBounds: getResourcesHeaderBounds(state),
-	resourcesCollapsed: isActionSectionCollapsed(state),
-	itemsInfo: getItemsInfo(state),
-	editing: isEditingItems(state),
-	filterString: getItemFilter(state),
-});
 
-const mapDispatchToProps = (dispatch: Dispatch) => ({
-	actions: bindActionCreators({
-		setEditingItems,
-		setItemFilter,
-	}, dispatch)
-});
 
-export default connect(mapStateToProps, mapDispatchToProps)(Items);
+export default connector(Items);
 
 

@@ -1,10 +1,11 @@
 import { PayloadAction } from "@reduxjs/toolkit";
+import { newAction } from "data/action";
 import { newBranch } from "data/branch";
 import { newItem } from "data/item";
-import { BRANCH_LIMIT, ITEM_LIMIT, SPLIT_LIMIT } from "data/limit";
+import { ACTION_LIMIT, BRANCH_LIMIT, ITEM_LIMIT, SPLIT_LIMIT } from "data/limit";
 import { cloneSplit, newSplit, RouteSplit } from "data/split";
 import { ReduxGlobalState } from "store/store";
-import { getActiveBranch, getActiveSplit, getBranchCount, getItemCount, getSplitCount } from "./selectors";
+import { getActionCount, getActiveAction, getActiveBranch, getActiveSplit, getBranchCount, getItemCount, getSplitCount } from "./selectors";
 
 function validateBranch(state: ReduxGlobalState, branchIndex: number): boolean {
 	const branchLength = getBranchCount(state);
@@ -20,10 +21,16 @@ function validateItem(state: ReduxGlobalState, index: number): boolean {
 	return index >= 0 && index < getItemCount(state);
 }
 
+function validateAction(state: ReduxGlobalState, branchIndex: number, splitIndex: number, actionIndex: number): boolean {
+	if (!validateSplit(state, branchIndex, splitIndex)) return false;
+	return actionIndex >= 0 && actionIndex < getActionCount(state, branchIndex, splitIndex);
+}
+
 export default {
 	setActiveBranchAndSplit(state: ReduxGlobalState, action: PayloadAction<{ activeBranch: number, activeSplit: number }>): void {
 		state.routeState.activeBranch = action.payload.activeBranch;
 		state.routeState.activeSplit = action.payload.activeSplit;
+		state.routeState.activeAction = -1;
 	},
 	setActiveAction(state: ReduxGlobalState, action: PayloadAction<{ activeAction: number }>): void {
 		state.routeState.activeAction = action.payload.activeAction;
@@ -258,5 +265,34 @@ export default {
 		} else {
 			state.routeState.items.splice(index, 1);
 		}
+	},
+	createAction(state: ReduxGlobalState, action: PayloadAction<{ branchIndex?: number, splitIndex?: number, actionIndex: number }>): void {
+		let { branchIndex, splitIndex } = action.payload;
+		const { actionIndex } = action.payload;
+		branchIndex = branchIndex ?? getActiveBranch(state);
+		splitIndex = splitIndex ?? getActiveSplit(state);
+		if (!validateSplit(state, branchIndex, splitIndex)) {
+			return;
+		}
+		const actionCount = getActionCount(state, branchIndex, splitIndex);
+		if (actionCount >= ACTION_LIMIT) {
+			return;
+		}
+		const routeAction = newAction();
+		if (!validateAction(state, branchIndex, splitIndex, actionIndex)) {
+			state.routeState.branches[branchIndex].splits[splitIndex].actions.push(routeAction);
+		} else {
+			state.routeState.branches[branchIndex].splits[splitIndex].actions.splice(actionIndex, 0, routeAction);
+			const activeBranch = getActiveBranch(state);
+			const activeSplit = getActiveSplit(state);
+
+			if (activeBranch === branchIndex && activeSplit === splitIndex) {
+				const activeAction = getActiveAction(state);
+				if (activeAction >= actionIndex) {
+					state.routeState.activeAction += 1;
+				}
+			}
+		}
+
 	}
 };

@@ -1,12 +1,16 @@
-import { connect } from "react-redux";
+import { connect, ConnectedProps } from "react-redux";
 import {
 	getInfo
 } from "store/application/selectors";
 import { ReduxGlobalState } from "store/store";
 
-type Props = {
-	text: string
-}
+const mapStateToProps = (state: ReduxGlobalState) => ({
+	text: getInfo(state),
+});
+
+const connector = connect(mapStateToProps);
+
+type Props = ConnectedProps<typeof connector>;
 
 export const Footer: React.FunctionComponent<Props> = ({ text }: Props) => {
 	return (
@@ -14,8 +18,4 @@ export const Footer: React.FunctionComponent<Props> = ({ text }: Props) => {
 	);
 };
 
-const mapStateToProps = (state: ReduxGlobalState) => ({
-	text: getInfo(state),
-});
-
-export default connect(mapStateToProps)(Footer);
+export default connector(Footer);

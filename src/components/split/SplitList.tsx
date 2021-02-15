@@ -1,4 +1,4 @@
-import { connect } from "react-redux";
+import { connect, ConnectedProps } from "react-redux";
 import Split from "./Split";
 // import { createSplitAt, mergeNextBranchWithCurrentBranch } from "../../data";
 import {
@@ -14,28 +14,38 @@ import {
 import {
 	setInfo
 } from "store/application/actions";
-import { ActionCreatorWithPayload, bindActionCreators, Dispatch } from "@reduxjs/toolkit";
+import { bindActionCreators, Dispatch } from "@reduxjs/toolkit";
 import { benchEnd, benchStart } from "util/benchmark";
 import { SPLIT_LIMIT } from "data/limit";
 import { RouteSplit } from "data/split";
 import { AppAction } from "apptype";
 import { ReduxGlobalState } from "store/store";
 
-type Props = {
+type ExternalProps = {
 	branchIndex: number,
-	isLastBranch: boolean,
-	length: number,
-	editing: boolean,
-	copiedSplit?: RouteSplit,
-	currentBranchName: string,
-	nextBranchName?: string,
-	actions: {
-		createSplit: ActionCreatorWithPayload<{ branchIndex: number, splitIndex: number, templateSplit?: RouteSplit }>,
-		setInfo: ActionCreatorWithPayload<{ info: string }>,
-		mergeNextIntoBranch: ActionCreatorWithPayload<{ branchIndex: number }>,
-	},
 	appActions: AppAction,
 }
+
+const mapStateToProps = (state: ReduxGlobalState, { branchIndex }: ExternalProps) => ({
+	length: getSplitCount(state, branchIndex),
+	editing: isEditingNav(state),
+	isLastBranch: getBranchCount(state) === branchIndex + 1,
+	currentBranchName: getBranchName(state, branchIndex),
+	nextBranchName: branchIndex === getBranchCount(state) - 1 ? undefined : getBranchName(state, branchIndex + 1),
+	copiedSplit: getSplitClipboard(state),
+});
+
+const mapDispatchToProps = (dispatch: Dispatch) => ({
+	actions: bindActionCreators({
+		createSplit,
+		setInfo,
+		mergeNextIntoBranch,
+	}, dispatch)
+});
+
+const connector = connect(mapStateToProps, mapDispatchToProps);
+
+type Props = ConnectedProps<typeof connector> & ExternalProps;
 
 export const SplitList: React.FunctionComponent<Props> = ({
 	branchIndex, isLastBranch, length, editing, copiedSplit, currentBranchName, nextBranchName, actions, appActions
@@ -98,26 +108,4 @@ export const SplitList: React.FunctionComponent<Props> = ({
 	</>;
 };
 
-type ExternalProps = {
-	branchIndex: number,
-	appActions: AppAction,
-}
-
-const mapStateToProps = (state: ReduxGlobalState, { branchIndex }: ExternalProps) => ({
-	length: getSplitCount(state, branchIndex),
-	editing: isEditingNav(state),
-	isLastBranch: getBranchCount(state) === branchIndex + 1,
-	currentBranchName: getBranchName(state, branchIndex),
-	nextBranchName: branchIndex === getBranchCount(state) - 1 ? undefined : getBranchName(state, branchIndex + 1),
-	copiedSplit: getSplitClipboard(state),
-});
-
-const mapDispatchToProps = (dispatch: Dispatch) => ({
-	actions: bindActionCreators({
-		createSplit,
-		setInfo,
-		mergeNextIntoBranch,
-	}, dispatch)
-});
-
-export default connect(mapStateToProps, mapDispatchToProps)(SplitList);
+export default connector(SplitList);

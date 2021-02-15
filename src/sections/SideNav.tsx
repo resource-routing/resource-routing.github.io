@@ -1,7 +1,7 @@
 import Box from "components/Box";
 import BranchList from "components/branch/BranchList";
 import ExpandButton from "components/ExpandButton";
-import { connect } from "react-redux";
+import { connect, ConnectedProps } from "react-redux";
 import {
 	getSideHeaderBounds,
 	getSideMainBounds,
@@ -17,17 +17,27 @@ import { Bounds } from "util/layout";
 import { AppAction } from "apptype";
 import { ReduxGlobalState } from "store/store";
 
-type Props = {
-	sideHeaderBounds: Bounds,
-	sideMainBounds: Bounds,
-	sideCollapsed: boolean,
-	actions: {
-		setSideCollapsed: ActionCreatorWithPayload<{ collapsed: boolean }>,
-		setEditingNav: ActionCreatorWithPayload<{ editing: boolean }>,
-	},
+type ExternalProps = {
 	appActions: AppAction,
-	editing: boolean,
 }
+
+const mapStateToProps = (state: ReduxGlobalState) => ({
+	sideHeaderBounds: getSideHeaderBounds(state),
+	sideMainBounds: getSideMainBounds(state),
+	sideCollapsed: isSideSectionCollapsed(state),
+	editing: isEditingNav(state),
+});
+
+const mapDispatchToProps = (dispatch: Dispatch) => ({
+	actions: bindActionCreators({
+		setSideCollapsed,
+		setEditingNav
+	}, dispatch)
+});
+
+const connector = connect(mapStateToProps, mapDispatchToProps);
+
+type Props = ConnectedProps<typeof connector> & ExternalProps;
 
 export const SideNav: React.FunctionComponent<Props> = ({
 	sideHeaderBounds,
@@ -63,18 +73,6 @@ export const SideNav: React.FunctionComponent<Props> = ({
 	);
 };
 
-const mapStateToProps = (state: ReduxGlobalState) => ({
-	sideHeaderBounds: getSideHeaderBounds(state),
-	sideMainBounds: getSideMainBounds(state),
-	sideCollapsed: isSideSectionCollapsed(state),
-	editing: isEditingNav(state),
-});
 
-const mapDispatchToProps = (dispatch: Dispatch) => ({
-	actions: bindActionCreators({
-		setSideCollapsed,
-		setEditingNav
-	}, dispatch)
-});
 
-export default connect(mapStateToProps, mapDispatchToProps)(SideNav);
+export default connector(SideNav);

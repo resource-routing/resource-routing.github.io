@@ -1,4 +1,4 @@
-import { connect } from "react-redux";
+import { connect, ConnectedProps } from "react-redux";
 import ActionSummary from "components/action/ActionSummary";
 import ExpandButton from "components/ExpandButton";
 import {
@@ -18,48 +18,58 @@ import {
 	swapSplits,
 	moveFirstSplitToPreviousBranch,
 	moveLastSplitToNextBranch,
+	setActiveBranchAndSplit,
 } from "store/routing/actions";
 import {
 	setInfo,
 	setSplitClipboard,
 } from "store/application/actions";
 import { getSplitClipboard } from "store/application/selectors";
-import { ActionCreatorWithPayload, bindActionCreators, Dispatch } from "@reduxjs/toolkit";
+import { bindActionCreators, Dispatch } from "@reduxjs/toolkit";
 import { benchStart, benchEnd } from "util/benchmark";
 import { SPLIT_LIMIT } from "data/limit";
 import { AppAction } from "apptype";
 import { RouteSplit } from "data/split";
 import { ReduxGlobalState } from "store/store";
 
-
-type Props = {
+type ExternalProps = {
 	branchIndex: number,
 	splitIndex: number,
-	name: string,
-	expanded: boolean,
-	isLastBranch: boolean,
-	editing: boolean,
-	actions: {
-		setSplitExpanded: ActionCreatorWithPayload<{ branchIndex: number, splitIndex: number, expanded: boolean }>,
-		setSplitName: ActionCreatorWithPayload<{ branchIndex: number, splitIndex: number, name: string }>,
-		deleteSplit: ActionCreatorWithPayload<{ branchIndex: number, splitIndex: number }>,
-		breakBranchAt: ActionCreatorWithPayload<{ branchIndex: number, splitIndex: number }>,
-		createSplit: ActionCreatorWithPayload<{ branchIndex: number, splitIndex: number, templateSplit?: RouteSplit }>,
-		swapSplits: ActionCreatorWithPayload<{ branchIndex: number, i: number, j: number }>,
-		moveFirstSplitToPreviousBranch: ActionCreatorWithPayload<{ branchIndex: number }>,
-		moveLastSplitToNextBranch: ActionCreatorWithPayload<{ branchIndex: number }>,
-		setInfo: ActionCreatorWithPayload<{ info: string }>,
-		setSplitClipboard: ActionCreatorWithPayload<{ split: RouteSplit }>,
-	},
 	appActions: AppAction,
-	copiedSplit?: RouteSplit,
-	splitToCopy: RouteSplit,
-	splitCount: number,
 }
+const mapStateToProps = (state: ReduxGlobalState, { branchIndex, splitIndex }: ExternalProps) => ({
+	name: getSplitName(state, branchIndex, splitIndex),
+	expanded: isSplitExpanded(state, branchIndex, splitIndex),
+	isLastBranch: getBranchCount(state) === branchIndex + 1,
+	editing: isEditingNav(state),
+	copiedSplit: getSplitClipboard(state),
+	splitToCopy: getSplit(state, branchIndex, splitIndex),
+	splitCount: getSplitCount(state, branchIndex),
+});
+
+const mapDispatchToProps = (dispatch: Dispatch) => ({
+	actions: bindActionCreators({
+		setSplitExpanded,
+		setSplitName,
+		breakBranchAt,
+		setInfo,
+		deleteSplit,
+		createSplit,
+		setSplitClipboard,
+		swapSplits,
+		moveFirstSplitToPreviousBranch,
+		moveLastSplitToNextBranch,
+		setActiveBranchAndSplit,
+	}, dispatch)
+});
+
+const connector = connect(mapStateToProps, mapDispatchToProps);
+
+type Props = ConnectedProps<typeof connector> & ExternalProps;
 
 export const Split: React.FunctionComponent<Props> = ({
 	branchIndex, splitIndex, name, expanded, isLastBranch, editing, actions, appActions, copiedSplit, splitToCopy, splitCount,
-}) => {
+}: Props) => {
 	const isLast = splitIndex === splitCount - 1;
 	const isFirstBranch = branchIndex === 0;
 	const isFirst = splitIndex === 0;
@@ -183,7 +193,10 @@ export const Split: React.FunctionComponent<Props> = ({
 				{expandButtonCell}
 				<td colSpan={9}>
 					<u className="split-link" onClick={() => {
-						//actions.openSplit(branchIndex, index);
+						actions.setActiveBranchAndSplit({
+							activeBranch: branchIndex,
+							activeSplit: splitIndex,
+						});
 					}}>{displayName}</u>
 				</td>
 			</tr>;
@@ -192,35 +205,5 @@ export const Split: React.FunctionComponent<Props> = ({
 		return splitNode;
 	return <>{splitNode}<ActionSummary branchIndex={branchIndex} splitIndex={splitIndex} /></>;
 };
-// key="split_action_list" 
 
-type ExternalProps = {
-	branchIndex: number,
-	splitIndex: number,
-}
-const mapStateToProps = (state: ReduxGlobalState, { branchIndex, splitIndex }: ExternalProps) => ({
-	name: getSplitName(state, branchIndex, splitIndex),
-	expanded: isSplitExpanded(state, branchIndex, splitIndex),
-	isLastBranch: getBranchCount(state) === branchIndex + 1,
-	editing: isEditingNav(state),
-	copiedSplit: getSplitClipboard(state),
-	splitToCopy: getSplit(state, branchIndex, splitIndex),
-	splitCount: getSplitCount(state, branchIndex),
-});
-
-const mapDispatchToProps = (dispatch: Dispatch) => ({
-	actions: bindActionCreators({
-		setSplitExpanded,
-		setSplitName,
-		breakBranchAt,
-		setInfo,
-		deleteSplit,
-		createSplit,
-		setSplitClipboard,
-		swapSplits,
-		moveFirstSplitToPreviousBranch,
-		moveLastSplitToNextBranch,
-	}, dispatch)
-});
-
-export default connect(mapStateToProps, mapDispatchToProps)(Split);
+export default connector(Split);

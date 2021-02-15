@@ -11,32 +11,47 @@ import {
 	setItemName,
 	setItemColor,
 	deleteItem,
+	swapItems,
 } from "store/routing/actions";
 import {
 	setInfo,
 } from "store/application/actions";
 import { ReduxGlobalState } from "store/store";
-import { connect } from "react-redux";
+import { connect, ConnectedProps } from "react-redux";
 import { AppAction } from "apptype";
 import { benchEnd, benchStart } from "util/benchmark";
 import { ITEM_LIMIT } from "data/limit";
 
-type Props = {
-	name: string,
-	color: string,
-	background: string,
-	foreground: string,
+type ExternalProps = {
 	index: number,
-	actions: {
-		setItemName: ActionCreatorWithPayload<{ index: number, name: string }>,
-		setItemColor: ActionCreatorWithPayload<{ index: number, color: string }>,
-		createItem: ActionCreatorWithPayload<{ index: number }>,
-		deleteItem: ActionCreatorWithPayload<{ index: number }>,
-		setInfo: ActionCreatorWithPayload<{ info: string }>,
-	},
-	itemCount: number,
 	appActions: AppAction,
 }
+
+const mapStateToProps = (state: ReduxGlobalState, ownProps: ExternalProps) => {
+	const color = getItemColorByIndex(state, ownProps.index);
+	return {
+		name: getItemNameByIndex(state, ownProps.index),
+		color,
+		background: isValidNonWhiteColor(color) ? color : "white",
+		foreground: shouldMakeTextWhiteForBackground(color) ? "white" : "black",
+		itemCount: getItemCount(state),
+	}
+};
+
+const mapDispatchToProps = (dispatch: Dispatch, ownProps: ExternalProps) => ({
+	actions: bindActionCreators({
+		createItem,
+		setItemName,
+		setItemColor,
+		setInfo,
+		deleteItem,
+		swapItems,
+	}, dispatch)
+});
+
+const connector = connect(mapStateToProps, mapDispatchToProps);
+
+type Props = ConnectedProps<typeof connector> & ExternalProps;
 
 const ItemEdit: React.FunctionComponent<Props> = ({ name, color, foreground, background, index, itemCount, actions, appActions }) => {
 	const isLast = index === itemCount - 1;
@@ -73,15 +88,25 @@ const ItemEdit: React.FunctionComponent<Props> = ({ name, color, foreground, bac
 					}} />
 			</td>
 			<td className="icon-button-width">
-				<button className="icon-button" disabled={/*index === 0*/true} title="Move up" onClick={() => {
-					//actions.doToBranches(swapBranches(index, index - 1), "Branch moved.", index - 1);
-				}}>&uarr;</button>
+				{!isFirst &&
+					<button className="icon-button" disabled={isFirst} title="Move up" onClick={() => {
+						const startTime = benchStart();
+						actions.swapItems({ i: index, j: index - 1 });
+						actions.setInfo({ info: `Item moved. (${benchEnd(startTime)} ms)` });
+					}}>&uarr;</button>
+				}
+
 			</td>
 
 			<td className="icon-button-width">
-				<button className="icon-button" title="Move down" disabled={/*isLast*/true} onClick={() => {
-					//actions.doToBranches(swapBranches(index, index + 1), "Branch moved.", index);
-				}}>&darr;</button>
+				{!isLast &&
+					<button className="icon-button" title="Move down" disabled={isLast} onClick={() => {
+						const startTime = benchStart();
+						actions.swapItems({ i: index, j: index + 1 });
+						actions.setInfo({ info: `Item moved. (${benchEnd(startTime)} ms)` });
+					}}>&darr;</button>
+				}
+
 			</td>
 
 			<td className="icon-button-width">
@@ -123,30 +148,6 @@ const ItemEdit: React.FunctionComponent<Props> = ({ name, color, foreground, bac
 	);
 };
 
-type ExternalProps = {
-	index: number,
-	appActions: AppAction,
-}
 
-const mapStateToProps = (state: ReduxGlobalState, ownProps: ExternalProps) => {
-	const color = getItemColorByIndex(state, ownProps.index);
-	return {
-		name: getItemNameByIndex(state, ownProps.index),
-		color,
-		background: isValidNonWhiteColor(color) ? color : "white",
-		foreground: shouldMakeTextWhiteForBackground(color) ? "white" : "black",
-		itemCount: getItemCount(state),
-	}
-};
 
-const mapDispatchToProps = (dispatch: Dispatch, ownProps: ExternalProps) => ({
-	actions: bindActionCreators({
-		createItem,
-		setItemName,
-		setItemColor,
-		setInfo,
-		deleteItem,
-	}, dispatch)
-});
-
-export default connect(mapStateToProps, mapDispatchToProps)(ItemEdit);
+export default connector(ItemEdit);

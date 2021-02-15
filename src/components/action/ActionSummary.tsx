@@ -1,4 +1,4 @@
-import { connect } from "react-redux";
+import { connect, ConnectedProps } from "react-redux";
 import {
 	getActionCount,
 	getActionName,
@@ -6,11 +6,20 @@ import {
 } from "store/routing/selectors";
 import { ReduxGlobalState } from "store/store";
 
-type RenderProps = {
-	isNote: boolean,
-	name: string,
-}
 
+type RenderExternalProps = {
+	branchIndex: number,
+	splitIndex: number,
+	actionIndex: number,
+}
+const mapStateToPropsForActionSummaryItemRender = (state: ReduxGlobalState, ownProps: RenderExternalProps) => ({
+	isNote: isActionNote(state, ownProps.branchIndex, ownProps.splitIndex, ownProps.actionIndex),
+	name: getActionName(state, ownProps.branchIndex, ownProps.splitIndex, ownProps.actionIndex),
+});
+
+const renderConnector = connect(mapStateToPropsForActionSummaryItemRender);
+
+type RenderProps = ConnectedProps<typeof renderConnector> & RenderExternalProps;
 
 const ActionSummaryItemRender: React.FunctionComponent<RenderProps> = ({ isNote, name }: RenderProps) => {
 	return <tr>
@@ -23,24 +32,22 @@ const ActionSummaryItemRender: React.FunctionComponent<RenderProps> = ({ isNote,
 	</tr>;
 };
 
-type RenderExternalProps = {
-	branchIndex: number,
-	splitIndex: number,
-	actionIndex: number,
-}
-const mapStateToPropsForActionSummaryItemRender = (state: ReduxGlobalState, ownProps: RenderExternalProps) => ({
-	isNote: isActionNote(state, ownProps.branchIndex, ownProps.splitIndex, ownProps.actionIndex),
-	name: getActionName(state, ownProps.branchIndex, ownProps.splitIndex, ownProps.actionIndex),
-});
 
 
 const ActionSummaryItem = connect(mapStateToPropsForActionSummaryItemRender)(ActionSummaryItemRender);
 
-type Props = {
-	length: number,
+
+type ExternalProps = {
 	branchIndex: number,
 	splitIndex: number,
 }
+const mapStateToProps = (state: ReduxGlobalState, ownProps: ExternalProps) => ({
+	length: getActionCount(state, ownProps.branchIndex, ownProps.splitIndex),
+});
+
+const connector = connect(mapStateToProps);
+
+type Props = ConnectedProps<typeof connector> & ExternalProps;
 
 export const ActionSummary: React.FunctionComponent<Props> = ({ length, branchIndex, splitIndex }: Props) => {
 	const nodes = [];
@@ -55,12 +62,5 @@ export const ActionSummary: React.FunctionComponent<Props> = ({ length, branchIn
 	return <>{nodes}</>;
 };
 
-type ExternalProps = {
-	branchIndex: number,
-	splitIndex: number,
-}
-const mapStateToProps = (state: ReduxGlobalState, ownProps: ExternalProps) => ({
-	length: getActionCount(state, ownProps.branchIndex, ownProps.splitIndex),
-});
 
-export default connect(mapStateToProps)(ActionSummary);
+export default connector(ActionSummary);

@@ -13,6 +13,16 @@ export type RouteAction = {
 	deltas: ActionDelta | null,
 }
 
+export function newAction(): RouteAction {
+	return {
+		name: "",
+		expanded: true,
+		deltaString: "",
+		deltaError: null,
+		deltas: null,
+	}
+}
+
 export function cloneAction(action: RouteAction): RouteAction {
 	const [deltas, deltaError] = stringToDelta(action.deltaString);
 	return {

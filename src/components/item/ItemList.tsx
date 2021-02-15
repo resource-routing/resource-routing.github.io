@@ -9,7 +9,7 @@ import { ReduxGlobalState } from "store/store";
 import { getItemFilter } from "store/setting/selectors";
 import { isEditingItems } from "store/application/selectors";
 import { ActionCreatorWithPayload, bindActionCreators, Dispatch } from "@reduxjs/toolkit";
-import { connect } from "react-redux";
+import { connect, ConnectedProps } from "react-redux";
 import { ITEM_LIMIT } from "data/limit";
 import {
 	setInfo,
@@ -17,17 +17,30 @@ import {
 import { createItem } from "store/routing/actions";
 import { benchStart, benchEnd } from "util/benchmark";
 
-
-type Props = {
-	itemIndices: number[],
-	editing: boolean,
-	actions: {
-		createItem: ActionCreatorWithPayload<{ index: number }>,
-		setInfo: ActionCreatorWithPayload<{ info: string }>,
-	},
+type ExternalProps = {
 	appActions: AppAction,
-	itemCount: number,
 }
+
+const mapStateToProps = (state: ReduxGlobalState, ownProps: ExternalProps) => {
+	const filterString = getItemFilter(state);
+	const filter = (!filterString) ? [] : filterString.split(",").map(s => s.trim());
+	return {
+		itemIndices: getFilteredItemIndices(state, filter),
+		editing: isEditingItems(state),
+		itemCount: getItemCount(state),
+	};
+};
+
+const mapDispatchToProps = (dispatch: Dispatch, ownProps: ExternalProps) => ({
+	actions: bindActionCreators({
+		setInfo,
+		createItem,
+	}, dispatch)
+});
+
+const connector = connect(mapStateToProps, mapDispatchToProps);
+
+type Props = ConnectedProps<typeof connector> & ExternalProps;
 
 const ItemList: React.FunctionComponent<Props> = ({ itemIndices, editing, actions, appActions, itemCount }) => {
 	let itemSection;
@@ -92,25 +105,6 @@ const ItemList: React.FunctionComponent<Props> = ({ itemIndices, editing, action
 	);
 };
 
-type ExternalProps = {
-	appActions: AppAction,
-}
 
-const mapStateToProps = (state: ReduxGlobalState, ownProps: ExternalProps) => {
-	const filterString = getItemFilter(state);
-	const filter = (!filterString) ? [] : filterString.split(",").map(s => s.trim());
-	return {
-		itemIndices: getFilteredItemIndices(state, filter),
-		editing: isEditingItems(state),
-		itemCount: getItemCount(state),
-	};
-};
 
-const mapDispatchToProps = (dispatch: Dispatch, ownProps: ExternalProps) => ({
-	actions: bindActionCreators({
-		setInfo,
-		createItem,
-	}, dispatch)
-});
-
-export default connect(mapStateToProps, mapDispatchToProps)(ItemList);
+export default connector(ItemList);

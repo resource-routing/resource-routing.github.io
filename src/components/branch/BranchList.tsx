@@ -1,4 +1,4 @@
-import { connect } from "react-redux";
+import { connect, ConnectedProps } from "react-redux";
 import Branch from "./Branch";
 
 import {
@@ -17,15 +17,25 @@ import { benchStart, benchEnd } from "util/benchmark";
 import { AppAction } from "apptype";
 import { ReduxGlobalState } from "store/store";
 
-type Props = {
-	length: number,
-	actions: {
-		createBranch: ActionCreatorWithPayload<{ branchIndex: number }>,
-		setEditingNav: ActionCreatorWithPayload<{ editing: boolean }>,
-		setInfo: ActionCreatorWithPayload<{ info: string }>,
-	},
+type ExternalProps = {
 	appActions: AppAction,
 }
+
+const mapStateToProps = (state: ReduxGlobalState) => ({
+	length: getBranchCount(state)
+});
+
+const mapDispatchToProps = (dispatch: Dispatch) => ({
+	actions: bindActionCreators({
+		createBranch,
+		setEditingNav,
+		setInfo,
+	}, dispatch)
+});
+
+const connector = connect(mapStateToProps, mapDispatchToProps);
+
+type Props = ConnectedProps<typeof connector> & ExternalProps;
 
 export const BranchList: React.FunctionComponent<Props> = ({ length, actions, appActions }: Props) => {
 	if (length === 0) return null;
@@ -63,18 +73,5 @@ export const BranchList: React.FunctionComponent<Props> = ({ length, actions, ap
 		</table>
 	);
 };
-
-
-const mapStateToProps = (state: ReduxGlobalState) => ({
-	length: getBranchCount(state)
-});
-
-const mapDispatchToProps = (dispatch: Dispatch) => ({
-	actions: bindActionCreators({
-		createBranch,
-		setEditingNav,
-		setInfo,
-	}, dispatch)
-});
 
 export default connect(mapStateToProps, mapDispatchToProps)(BranchList);

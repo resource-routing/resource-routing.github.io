@@ -161,6 +161,24 @@ export function getTotalActionCount(state: ReduxGlobalState): number {
 	return i;
 }
 
+export function getActionIndexFromGlobal(state: ReduxGlobalState, globalIndex: number): [number, number, number] {
+	let i = 0;
+	for (let b = 0; b < getBranchCount(state); b++) {
+		for (let s = 0; s < getSplitCount(state, b); s++) {
+			for (let a = 0; a < getActionCount(state, b, s); a++) {
+				if (i == globalIndex) {
+					return [b, s, a];
+				}
+				i++;
+			}
+		}
+	}
+	const branch = getBranchCount(state);
+	const split = getSplitCount(state, branch - 1);
+	const action = getActionCount(state, branch - 1, split - 1);
+	return [branch, split, action];
+}
+
 function getItems(state: ReduxGlobalState): RouteItem[] {
 	return getRouteState(state).items;
 }
