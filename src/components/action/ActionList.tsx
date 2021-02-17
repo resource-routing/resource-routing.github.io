@@ -11,6 +11,7 @@ import {
 import {
 	setEditingActions,
 	setInfo,
+	markResourceDirtyAtSplit,
 } from "store/application/actions";
 import { ReduxGlobalState } from "store/store";
 
@@ -22,16 +23,17 @@ type ExternalProps = {
 	appActions: AppAction,
 }
 
-const mapStateToProps = (state: ReduxGlobalState, ownProps: ExternalProps) => ({
+const mapStateToProps = (state: ReduxGlobalState) => ({
 	active: getActiveSplit(state) >= 0,
 	length: getActiveSplitActionCount(state),
 });
 
-const mapDispatchToProps = (dispatch: Dispatch, ownProps: ExternalProps) => ({
+const mapDispatchToProps = (dispatch: Dispatch) => ({
 	actions: bindActionCreators({
 		createAction,
 		setEditingActions,
 		setInfo,
+		markResourceDirtyAtSplit,
 	}, dispatch)
 });
 
@@ -44,7 +46,7 @@ export const ActionList: React.FunctionComponent<Props> = ({ length, active, act
 		return <span>Click on a split to view its details</span>;
 	}
 	const actionNodes = [];
-	for (let i = 0; i < length!; i++) {
+	for (let i = 0; i < length; i++) {
 		actionNodes.push(<ActionItem
 			key={i}
 			index={i}
@@ -56,7 +58,7 @@ export const ActionList: React.FunctionComponent<Props> = ({ length, active, act
 			<tbody>
 				{actionNodes}
 				<tr key="new_action_button">
-					<td colSpan={3}>
+					<td colSpan={7}>
 						<button onClick={() => {
 							if (length >= ACTION_LIMIT) {
 								const message = `You have reached the maximum number of actions per split (${ACTION_LIMIT})`;
@@ -65,6 +67,7 @@ export const ActionList: React.FunctionComponent<Props> = ({ length, active, act
 							} else {
 								const startTime = benchStart();
 								actions.createAction({ actionIndex: length });
+								actions.markResourceDirtyAtSplit({});
 								actions.setEditingActions({ editing: true });
 								actions.setInfo({ info: `Action created. (${benchEnd(startTime)} ms)` });
 							}
@@ -74,6 +77,6 @@ export const ActionList: React.FunctionComponent<Props> = ({ length, active, act
 			</tbody>
 		</table>
 	);
-}
+};
 
 export default connector(ActionList);

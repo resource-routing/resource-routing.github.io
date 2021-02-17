@@ -47,8 +47,12 @@ export function deltaToString(deltas: ActionDelta): DeltaString {
 }
 
 export function stringToDelta(str: DeltaString): [ActionDelta | null, DeltaError] {
-	if (!str || !str.length) return [{}, null];
-	if (!str.trim()) return [{}, null];
+	if (!str || !str.length) {
+		return [{}, null];
+	}
+	if (!str.trim()) {
+		return [{}, null];
+	}
 
 	const array = str.split(",").map(e => e.trim());
 	const deltaObj: ActionDelta = {};
@@ -56,16 +60,20 @@ export function stringToDelta(str: DeltaString): [ActionDelta | null, DeltaError
 	array.forEach(str => {
 		const [item, itemError] = stringToItem(str.trim() as DeltaItemString);
 		if (item !== null) {
-			deltaObj[item.name] = {
-				type: item.type,
-				value: item.value,
-			};
+			if (item.name in deltaObj) {
+				errors.push(`Duplicate: ${item.name}`);
+			} else {
+				deltaObj[item.name] = {
+					type: item.type,
+					value: item.value,
+				};
+			}
+
 		} else {
-			if (itemError !== null)
+			if (itemError !== null) {
 				errors.push(itemError);
+			}
 		}
-
-
 	});
 	return errors.length > 0 ? [null, errors.join("; ")] : [deltaObj, null];
 }
@@ -79,8 +87,6 @@ function itemToString(name: string, item: DeltaItem): DeltaItemString {
 	}
 	return `[${name}]${op}${quantity}`;
 }
-
-
 
 function stringToItem(str: DeltaItemString): [(DeltaItem & { name: string }) | null, DeltaError] {
 	//\[*?<name>](+|=|-)<quantity>
@@ -104,7 +110,9 @@ function stringToItem(str: DeltaItemString): [(DeltaItem & { name: string }) | n
 		return [null, `Item [${name}] has empty value`];
 	}
 	if (value.startsWith("[")) {
-		if (!value.endsWith("]")) return [null, `Item reference bracket not closed: ${value}`];
+		if (!value.endsWith("]")) {
+			return [null, `Item reference bracket not closed: ${value}`];
+		}
 		const ref = value.substring(1, value.length - 1);
 		return parseRefItem(name, op as DeltaOperator, ref);
 	} else {
@@ -121,8 +129,12 @@ export function deltaToCompressedString(deltas: ActionDelta, itemMap: Record<str
 }
 
 export function compressedStringToDelta(str: CompressedDeltaString, inverseItemMap: string[]): [ActionDelta | null, DeltaError] {
-	if (!str || !str.length) return [{}, null];
-	if (!str.trim()) return [{}, null];
+	if (!str || !str.length) {
+		return [{}, null];
+	}
+	if (!str.trim()) {
+		return [{}, null];
+	}
 
 	const array = str.split(",").map(e => e.trim());
 	const deltaObj: ActionDelta = {};
@@ -135,8 +147,9 @@ export function compressedStringToDelta(str: CompressedDeltaString, inverseItemM
 				value: item.value,
 			};
 		} else {
-			if (itemError !== null)
+			if (itemError !== null) {
 				errors.push(itemError);
+			}
 		}
 	});
 	return errors.length > 0 ? [null, errors.join("; ")] : [deltaObj, null];
@@ -156,6 +169,8 @@ function itemToCompressedString(name: string, itemMap: Record<string, number>, i
 	let ref: string | number = name;
 	if (name in itemMap) {
 		ref = itemMap[name];
+	} else {
+		ref = ref.replace(/:/g, "");
 	}
 	return `${ref}:${op}${quantity}`;
 }
@@ -205,7 +220,7 @@ function compressedStringToItem(str: CompressedDeltaItemString, inverseItemMap: 
 	}
 }
 
-function typeToOperator(type: DeltaType, value: string | number): [DeltaOperator, string | number] {
+export function typeToOperator(type: DeltaType, value: string | number): [DeltaOperator, string | number] {
 	switch (type) {
 		case "add":
 			if (value >= 0) {
@@ -242,7 +257,9 @@ function parseRefItem(name: string, op: DeltaOperator, value: string): [(DeltaIt
 function parseValueItem(name: string, op: DeltaOperator, value: string): [(DeltaItem & { name: string }) | null, DeltaError] {
 	let type: DeltaType;
 	let num = Number(value);
-	if (!Number.isInteger(num)) return [null, `Item [${name}]: invalid quantity "${value}`];
+	if (!Number.isInteger(num)) {
+		return [null, `Item [${name}]: invalid quantity "${value}`];
+	}
 	switch (op) {
 		case "+": type = "add"; break;
 		case "-": type = "add"; num = -num; break;

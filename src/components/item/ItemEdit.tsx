@@ -1,5 +1,5 @@
-import { ActionCreatorWithPayload, bindActionCreators, Dispatch } from "@reduxjs/toolkit";
-import { isValidNonWhiteColor, shouldMakeTextWhiteForBackground } from "util/color";
+import { bindActionCreators, Dispatch } from "@reduxjs/toolkit";
+import { getForegroundAndBackground } from "util/color";
 
 import {
 	getItemColorByIndex,
@@ -21,6 +21,7 @@ import { connect, ConnectedProps } from "react-redux";
 import { AppAction } from "apptype";
 import { benchEnd, benchStart } from "util/benchmark";
 import { ITEM_LIMIT } from "data/limit";
+import { useState } from "react";
 
 type ExternalProps = {
 	index: number,
@@ -29,16 +30,17 @@ type ExternalProps = {
 
 const mapStateToProps = (state: ReduxGlobalState, ownProps: ExternalProps) => {
 	const color = getItemColorByIndex(state, ownProps.index);
+	const [foreground, background] = getForegroundAndBackground(color);
 	return {
 		name: getItemNameByIndex(state, ownProps.index),
 		color,
-		background: isValidNonWhiteColor(color) ? color : "white",
-		foreground: shouldMakeTextWhiteForBackground(color) ? "white" : "black",
+		background,
+		foreground,
 		itemCount: getItemCount(state),
-	}
+	};
 };
 
-const mapDispatchToProps = (dispatch: Dispatch, ownProps: ExternalProps) => ({
+const mapDispatchToProps = (dispatch: Dispatch) => ({
 	actions: bindActionCreators({
 		createItem,
 		setItemName,
@@ -56,6 +58,7 @@ type Props = ConnectedProps<typeof connector> & ExternalProps;
 const ItemEdit: React.FunctionComponent<Props> = ({ name, color, foreground, background, index, itemCount, actions, appActions }) => {
 	const isLast = index === itemCount - 1;
 	const isFirst = index === 0;
+	const [renamed, setRenamed] = useState("");
 	return (
 		<tr>
 			<td className="icon-button-width"
@@ -68,13 +71,21 @@ const ItemEdit: React.FunctionComponent<Props> = ({ name, color, foreground, bac
 			<td>
 				<input
 					className="full-width"
-					placeholder="Item Name"
+					placeholder={name || "[Unnamed]"}
 					type="text"
-					value={name}
+					value={renamed}
 					onChange={(e) => {
-						actions.setItemName({ index, name: e.target.value });//todo: rename in deltas
+						setRenamed(e.target.value);
 					}} />
 
+			</td>
+			<td className="icon-button-width">
+				<button disabled={!renamed || renamed === name} className="icon-button" title="Apply rename" onClick={() => {
+					const startTime = benchStart();
+					actions.setItemName({ index, name: renamed });
+					setRenamed("");
+					actions.setInfo({ info: `Item renamed. (${benchEnd(startTime)} ms)` });
+				}}>R</button>
 			</td>
 			<td>
 				<input
@@ -112,21 +123,20 @@ const ItemEdit: React.FunctionComponent<Props> = ({ name, color, foreground, bac
 			<td className="icon-button-width">
 				<button className="icon-button" title="Delete" onClick={() => {
 					appActions.showAlert(
-						`Delete item "${name}"? Any split that uses the item will have errors. This is NOT reversible!`,
+						`Delete item "${name}"? This item will also be removed from actions that currently have it. This is NOT reversible!`,
 						[{
 							name: "Cancel"
 						}, {
 							name: "Delete",
 							execute: () => {
 								const startTime = benchStart();
-								actions.deleteItem({ index });//TODO delete in deltas
+								actions.deleteItem({ index });
 								actions.setInfo({ info: `Item deleted. (${benchEnd(startTime)} ms)` });
 							}
 						}]
 					);
-				}} disabled>X</button>
+				}}>X</button>
 			</td>
-
 
 			<td className="icon-button-width">
 				<button className="icon-button" title="New Item Below" onClick={() => {
@@ -147,7 +157,5 @@ const ItemEdit: React.FunctionComponent<Props> = ({ name, color, foreground, bac
 		</tr>
 	);
 };
-
-
 
 export default connector(ItemEdit);

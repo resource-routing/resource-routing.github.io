@@ -17,8 +17,9 @@ import { isEditingNav } from "store/application/selectors";
 import {
 	setInfo,
 	setEditingNav,
+	markResourceDirtyAtSplit,
 } from "store/application/actions";
-import { ActionCreatorWithPayload, bindActionCreators, Dispatch } from "@reduxjs/toolkit";
+import { bindActionCreators, Dispatch } from "@reduxjs/toolkit";
 import { benchEnd, benchStart } from "util/benchmark";
 import { AppAction } from "apptype";
 import { ReduxGlobalState } from "store/store";
@@ -45,6 +46,7 @@ const mapDispatchToProps = (dispatch: Dispatch) => ({
 		setInfo,
 		swapBranches,
 		setEditingNav,
+		markResourceDirtyAtSplit,
 	}, dispatch)
 });
 
@@ -83,6 +85,10 @@ export const Branch: React.FunctionComponent<Props> = ({ index, name, expanded, 
 						<button className="icon-button" title="Move up" disabled={isFirst} onClick={() => {
 							const startTime = benchStart();
 							actions.swapBranches({ i: index, j: index - 1 });
+							actions.markResourceDirtyAtSplit({
+								branchIndex: index - 1,
+								splitIndex: 0,
+							});
 							actions.setInfo({ info: `Branch moved. (${benchEnd(startTime)} ms)` });
 						}}>&uarr;</button>
 					}
@@ -92,6 +98,10 @@ export const Branch: React.FunctionComponent<Props> = ({ index, name, expanded, 
 						<button className="icon-button" title="Move down" disabled={isLast} onClick={() => {
 							const startTime = benchStart();
 							actions.swapBranches({ i: index, j: index + 1 });
+							actions.markResourceDirtyAtSplit({
+								branchIndex: index,
+								splitIndex: 0,
+							});
 							actions.setInfo({ info: `Branch moved. (${benchEnd(startTime)} ms)` });
 						}}>&darr;</button>
 					}
@@ -107,6 +117,10 @@ export const Branch: React.FunctionComponent<Props> = ({ index, name, expanded, 
 								execute: () => {
 									const startTime = benchStart();
 									actions.deleteBranch({ branchIndex: index });
+									actions.markResourceDirtyAtSplit({
+										branchIndex: index,
+										splitIndex: 0,
+									});
 									actions.setInfo({ info: `Branch deleted. (${benchEnd(startTime)} ms)` });
 								}
 							}]
@@ -122,6 +136,10 @@ export const Branch: React.FunctionComponent<Props> = ({ index, name, expanded, 
 						} else {
 							const startTime = benchStart();
 							actions.createBranch({ branchIndex: index + 1 });
+							actions.markResourceDirtyAtSplit({
+								branchIndex: index + 1,
+								splitIndex: 0,
+							});
 							actions.setEditingNav({ editing: true });
 							actions.setInfo({ info: `Branch created. (${benchEnd(startTime)} ms)` });
 						}

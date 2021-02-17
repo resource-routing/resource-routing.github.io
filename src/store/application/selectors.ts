@@ -2,6 +2,8 @@ import { Layout, Bounds } from "util/layout";
 import { ReduxGlobalState } from "store/store";
 import { ApplicationState } from "./type";
 import { RouteSplit } from "data/split";
+import { ActionResource, ResourceError, RouteResources } from "data/resource";
+import { getGlobalActionIndex } from "store/routing/selectors";
 
 function getApplicationState(state: ReduxGlobalState): ApplicationState {
 	return state.applicationState;
@@ -99,6 +101,26 @@ export function getSplitClipboard(state: ReduxGlobalState): RouteSplit | undefin
 	return getApplicationState(state).splitClipboard;
 }
 
-export function getItemsInfo(state: ReduxGlobalState): string {
-	return getApplicationState(state).itemsInfo;
+function getRouteResources(state: ReduxGlobalState): RouteResources {
+	return getApplicationState(state).resources;
+}
+
+export function getResourceCalcProgress(state: ReduxGlobalState): number {
+	return getRouteResources(state).progress;
+}
+
+export function getResourceCalcError(state: ReduxGlobalState): ResourceError {
+	return getRouteResources(state).error;
+}
+
+export function getActionResourceByGlobalIndex(state: ReduxGlobalState, globalIndex: number): ActionResource | undefined {
+	return getRouteResources(state).content[globalIndex];
+}
+
+export function getActionResource(state: ReduxGlobalState, branchIndex: number, splitIndex: number, actionIndex: number): ActionResource | undefined {
+	return getActionResourceByGlobalIndex(state, getGlobalActionIndex(state, branchIndex, splitIndex, actionIndex));
+}
+
+export function isOnlyShowingChangedResources(state: ReduxGlobalState): boolean {
+	return getApplicationState(state).showOnlyChangedResources;
 }

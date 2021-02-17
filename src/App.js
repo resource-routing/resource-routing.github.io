@@ -3,6 +3,7 @@ import "./App.css";
 import SideNav from "sections/SideNav";
 import Header from "sections/Header";
 import Footer from "sections/Footer";
+import Actions from "sections/Actions";
 import Box from "components/Box";
 import {
 	getActionsBounds,
@@ -21,7 +22,7 @@ import { connect } from "react-redux";
 import { bindActionCreators } from "@reduxjs/toolkit";
 import Alert from "dialog/Alert";
 import Items from "sections/Items";
-
+import { startResourceCalcClock, stopResourceCalcClock } from "data/resource";
 
 class App extends React.Component {
 	constructor(props) {
@@ -35,6 +36,7 @@ class App extends React.Component {
 	componentDidMount() {
 		window.addEventListener("resize", this.redoLayout.bind(this));
 		this.props.actions.doLayout();
+		startResourceCalcClock();
 	}
 
 	redoLayout() {
@@ -43,6 +45,7 @@ class App extends React.Component {
 
 	componentWillUnmount() {
 		window.removeEventListener("resize", this.redoLayout.bind(this));
+		stopResourceCalcClock();
 		// if (this.state.autoSaveHandle) {
 		//   window.clearInterval(this.state.autoSaveHandle);
 		// }
@@ -58,37 +61,30 @@ class App extends React.Component {
 		});
 	}
 
-
 	// setSideCollapsed(sideCollapsed) {
 	//   this.setState({
 	//     sideCollapsed: sideCollapsed,
 	//     dimensions: layout(sideCollapsed, this.state.resourcesCollapsed, this.state.headerCollapsed),
 	//   });
 	// }
-
 	// setResourcesCollapsed(resourcesCollapsed) {
 	//   this.setState({
 	//     resourcesCollapsed: resourcesCollapsed,
 	//     dimensions: layout(this.state.sideCollapsed, resourcesCollapsed, this.state.headerCollapsed),
 	//   });
 	// }
-
 	// setHeaderCollapsed(headerCollapsed) {
 	//   this.setState({
 	//     headerCollapsed: headerCollapsed,
 	//     dimensions: layout(this.state.sideCollapsed, this.state.resourcesCollapsed, headerCollapsed),
 	//   });
 	// }
-
-
-
 	// recalculateResources(branch, split) {
 	//   if (this.state.resourceUpdateHandle) {
 	//     if (branch > this.state.branches.length) return;
 	//     if (branch > this.state.dirtyBranch) return;
 	//     if (branch === this.state.dirtyBranch && split > this.state.dirtySplit) return;
 	//   }
-
 	//   if (this.state.resourceUpdateHandle) {
 	//     window.clearTimeout(this.state.resourceUpdateHandle);
 	//   }
@@ -106,10 +102,8 @@ class App extends React.Component {
 	//       resourceUpdateHandle: handle,
 	//       info: "Updating Resources",
 	//     })
-	//   });
-
+	//   })
 	// }
-
 	// doCalcResources() {
 	//   let b = this.state.dirtyBranch;
 	//   let s = this.state.dirtySplit;
@@ -139,7 +133,6 @@ class App extends React.Component {
 	//     }
 	//     a = 0;
 	//   }
-
 	//   const newResources = calculateResourcesAt(this.state.resources, this.state.branches, this.state.items, b, s, a);
 	//   this.setState({
 	//     dirtyBranch: b,
@@ -156,7 +149,6 @@ class App extends React.Component {
 	//     });
 	//   })
 	// }
-
 	// finishResourceUpdate() {
 	//   if (this.state.resourceUpdateHandle) {
 	//     window.clearTimeout(this.state.resourceUpdateHandle);
@@ -166,9 +158,6 @@ class App extends React.Component {
 	//     info: `Resources update finished.`,
 	//   })
 	// }
-
-
-
 	// setAutoSave(autoSave) {
 	//   if (!autoSave) {
 	//     if (this.state.autoSaveHandle) {
@@ -207,8 +196,6 @@ class App extends React.Component {
 	//     this.saveStateToLocalStorage();
 	//   }
 	// }
-
-
 	// loadStoredState(storedStateLoadFunction, start) {
 	//   const startTime = start || benchmarkTime();
 	//   const storedState = storedStateLoadFunction();
@@ -225,13 +212,11 @@ class App extends React.Component {
 	//     })
 	//   }
 	// }
-
 	// saveStateToLocalStorage() {
 	//   const startTime = benchmarkTime();
 	//   saveToLocalStorage(this.getStateToStore());
 	//   this.setInformation(`Saved to local storage in ${benchmarkDelta(startTime)} ms. Last saved at ${new Date()}`);
 	// }
-
 	// getStateToStore() {
 	//   return {
 	//     branches: this.state.branches,
@@ -242,13 +227,11 @@ class App extends React.Component {
 	//     itmes: this.state.items,
 	//   }
 	// }
-
 	// setProjectName(name) {
 	//   this.setState({
 	//     projectName: name
 	//   })
 	// }
-
 	// doToBranches(transitionFunction, info, dirtyBranch, dirtySplit) {
 	//   const startTime = benchmarkTime();
 	//   this.setState({
@@ -267,7 +250,6 @@ class App extends React.Component {
 	//     }
 	//   })
 	// }
-
 	// doToItems(transitionFunction, info, doRecalculate) {
 	//   const startTime = benchmarkTime();
 	//   this.setState({
@@ -284,12 +266,9 @@ class App extends React.Component {
 	//     }
 	//   })
 	// }
-
-
 	// downloadStateToFile() {
 	//   downloadToFile(this.getStateToStore());
 	// }
-
 	// openSplit(b, s) {
 	//   const startTime = benchmarkTime();
 	//   this.setState({
@@ -300,7 +279,6 @@ class App extends React.Component {
 	//     this.setInformation(`Split detail opened. (${benchmarkDelta(startTime)}ms)`);
 	//   })
 	// }
-
 	// openAction(a) {
 	//   if (this.state.activeBranch >= 0 && this.state.activeSplit >= 0) {
 	//     const startTime = benchmarkTime();
@@ -310,7 +288,6 @@ class App extends React.Component {
 	//       this.setInformation(`Action resources opened. (${benchmarkDelta(startTime)}ms)`);
 	//     })
 	//   }
-
 	// }
 	render() {
 		// if (!this.state.dimensions) {
@@ -360,9 +337,6 @@ class App extends React.Component {
 			resourcesBounds,
 		} = this.props;
 		return (
-
-
-
 			<div style={{
 				width: "100vw",
 				height: "100vh"
@@ -382,11 +356,7 @@ class App extends React.Component {
                     [WIP]
 				</Box>
 				<Box layout={actionsBounds} borderClass="border">
-					[WIP]
-					{/* <Actions
-                        layout={this.state.dimensions.actions}
-                        resourcesCollapsed={this.state.resourcesCollapsed}
-                        actions={actions} /> */}
+					<Actions appActions={appActions} />
 				</Box>
 				{!resourcesHidden &&
 					<Box layout={resourcesBounds} borderClass="border">

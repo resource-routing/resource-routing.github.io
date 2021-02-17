@@ -69,7 +69,7 @@ export default function layout({ sideCollapsed, actionsCollapsed, headerCollapse
 	const RESOURCE_HEIGHT = "30%";
 	const RESOURCE_WIDTH_SHRINK = "24rem";
 	const RESOURCE_COLLAPSE_HEIGHT = "1.8rem";
-	const RESOURCE_HEADER_HEIGHT = "3.2rem";
+	const RESOURCE_HEADER_HEIGHT = "4.5rem";
 
 	const ACTION_MIN_WIDTH = "50rem";
 

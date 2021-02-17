@@ -1,11 +1,22 @@
 import { PayloadAction } from "@reduxjs/toolkit";
 import { newAction } from "data/action";
 import { newBranch } from "data/branch";
+import { deleteItemInDelta, deltaToString, renameItemInDelta, stringToDelta } from "data/delta";
 import { newItem } from "data/item";
 import { ACTION_LIMIT, BRANCH_LIMIT, ITEM_LIMIT, SPLIT_LIMIT } from "data/limit";
 import { cloneSplit, newSplit, RouteSplit } from "data/split";
 import { ReduxGlobalState } from "store/store";
-import { getActionCount, getActiveAction, getActiveBranch, getActiveSplit, getBranchCount, getItemCount, getSplitCount } from "./selectors";
+import {
+	getActionCount,
+	getActionDeltas,
+	getActiveAction,
+	getActiveBranch,
+	getActiveSplit,
+	getBranchCount,
+	getInvalidItemNamesIn,
+	getItemCount,
+	getSplitCount
+} from "./selectors";
 
 function validateBranch(state: ReduxGlobalState, branchIndex: number): boolean {
 	const branchLength = getBranchCount(state);
@@ -13,7 +24,9 @@ function validateBranch(state: ReduxGlobalState, branchIndex: number): boolean {
 }
 
 function validateSplit(state: ReduxGlobalState, branchIndex: number, splitIndex: number): boolean {
-	if (!validateBranch(state, branchIndex)) return false;
+	if (!validateBranch(state, branchIndex)) {
+		return false;
+	}
 	return splitIndex >= 0 && splitIndex < getSplitCount(state, branchIndex);
 }
 
@@ -22,7 +35,9 @@ function validateItem(state: ReduxGlobalState, index: number): boolean {
 }
 
 function validateAction(state: ReduxGlobalState, branchIndex: number, splitIndex: number, actionIndex: number): boolean {
-	if (!validateSplit(state, branchIndex, splitIndex)) return false;
+	if (!validateSplit(state, branchIndex, splitIndex)) {
+		return false;
+	}
 	return actionIndex >= 0 && actionIndex < getActionCount(state, branchIndex, splitIndex);
 }
 
@@ -156,6 +171,12 @@ export default {
 		const { branchIndex, splitIndex, expanded } = action.payload;
 		state.routeState.branches[branchIndex].splits[splitIndex].expanded = expanded;
 	},
+	setSplitCoords(state: ReduxGlobalState, action: PayloadAction<{ branchIndex: number, splitIndex: number, x: number, y: number, z: number }>): void {
+		const { branchIndex, splitIndex, x, y, z } = action.payload;
+		state.routeState.branches[branchIndex].splits[splitIndex].mapX = x;
+		state.routeState.branches[branchIndex].splits[splitIndex].mapY = y;
+		state.routeState.branches[branchIndex].splits[splitIndex].mapZ = z;
+	},
 	deleteSplit(state: ReduxGlobalState, action: PayloadAction<{ branchIndex: number, splitIndex: number }>): void {
 		const { branchIndex, splitIndex } = action.payload;
 		if (!validateSplit(state, branchIndex, splitIndex)) {
@@ -243,7 +264,19 @@ export default {
 	},
 	setItemName(state: ReduxGlobalState, action: PayloadAction<{ index: number, name: string }>): void {
 		const { index, name } = action.payload;
+		const oldName = state.routeState.items[index].name;
 		state.routeState.items[index].name = name;
+		for (let b = 0; b < getBranchCount(state); b++) {
+			for (let s = 0; s < getSplitCount(state, b); s++) {
+				for (let a = 0; a < getActionCount(state, b, s); a++) {
+					const deltas = getActionDeltas(state, b, s, a);
+					if (deltas !== null) {
+						renameItemInDelta(deltas, oldName, name);
+						state.routeState.branches[b].splits[s].actions[a].deltaString = deltaToString(deltas);
+					}
+				}
+			}
+		}
 	},
 	setItemColor(state: ReduxGlobalState, action: PayloadAction<{ index: number, color: string }>): void {
 		const { index, color } = action.payload;
@@ -260,10 +293,35 @@ export default {
 	},
 	deleteItem(state: ReduxGlobalState, action: PayloadAction<{ index: number }>): void {
 		const { index } = action.payload;
+		let name: string;
 		if (!validateItem(state, index)) {
-			state.routeState.items.pop();
+			const item = state.routeState.items.pop();
+			if (item === undefined) {
+				return;
+			}
+			name = item.name;
 		} else {
+			const item = state.routeState.items[index];
 			state.routeState.items.splice(index, 1);
+			name = item.name;
+		}
+		for (let b = 0; b < getBranchCount(state); b++) {
+			for (let s = 0; s < getSplitCount(state, b); s++) {
+				for (let a = 0; a < getActionCount(state, b, s); a++) {
+					const deltas = getActionDeltas(state, b, s, a);
+					if (deltas !== null) {
+						deleteItemInDelta(deltas, name);
+						const deltaString = deltaToString(deltas);
+						state.routeState.branches[b].splits[s].actions[a].deltaString = deltaString;
+						if (deltaString === "" &&
+							getActiveBranch(state) === b &&
+							getActiveSplit(state) === s &&
+							getActiveAction(state) === a) {
+							state.routeState.activeAction = -1;
+						}
+					}
+				}
+			}
 		}
 	},
 	createAction(state: ReduxGlobalState, action: PayloadAction<{ branchIndex?: number, splitIndex?: number, actionIndex: number }>): void {
@@ -285,7 +343,6 @@ export default {
 			state.routeState.branches[branchIndex].splits[splitIndex].actions.splice(actionIndex, 0, routeAction);
 			const activeBranch = getActiveBranch(state);
 			const activeSplit = getActiveSplit(state);
-
 			if (activeBranch === branchIndex && activeSplit === splitIndex) {
 				const activeAction = getActiveAction(state);
 				if (activeAction >= actionIndex) {
@@ -293,6 +350,106 @@ export default {
 				}
 			}
 		}
+	},
+	setActionName(state: ReduxGlobalState, action: PayloadAction<{ branchIndex?: number, splitIndex?: number, actionIndex: number, name: string }>): void {
+		let { branchIndex, splitIndex } = action.payload;
+		const { actionIndex, name } = action.payload;
+		branchIndex = branchIndex ?? getActiveBranch(state);
+		splitIndex = splitIndex ?? getActiveSplit(state);
+		if (!validateAction(state, branchIndex, splitIndex, actionIndex)) {
+			return;
+		}
+		state.routeState.branches[branchIndex].splits[splitIndex].actions[actionIndex].name = name;
+	},
+	setActionExpanded(state: ReduxGlobalState, action: PayloadAction<{ branchIndex?: number, splitIndex?: number, actionIndex: number, expanded: boolean }>): void {
+		let { branchIndex, splitIndex } = action.payload;
+		const { actionIndex, expanded } = action.payload;
+		branchIndex = branchIndex ?? getActiveBranch(state);
+		splitIndex = splitIndex ?? getActiveSplit(state);
+		if (!validateAction(state, branchIndex, splitIndex, actionIndex)) {
+			return;
+		}
+		state.routeState.branches[branchIndex].splits[splitIndex].actions[actionIndex].expanded = expanded;
+	},
+	setActionDeltaString(state: ReduxGlobalState, action: PayloadAction<{ branchIndex?: number, splitIndex?: number, actionIndex: number, deltaString: string }>): void {
+		let { branchIndex, splitIndex } = action.payload;
+		const { actionIndex, deltaString } = action.payload;
+		branchIndex = branchIndex ?? getActiveBranch(state);
+		splitIndex = splitIndex ?? getActiveSplit(state);
 
-	}
+		if (!validateAction(state, branchIndex, splitIndex, actionIndex)) {
+			return;
+		}
+
+		if (deltaString === "" &&
+			getActiveBranch(state) === branchIndex &&
+			getActiveSplit(state) === splitIndex &&
+			getActiveAction(state) === actionIndex) {
+			state.routeState.activeAction = -1;
+		}
+		state.routeState.branches[branchIndex].splits[splitIndex].actions[actionIndex].expanded = true;
+
+		state.routeState.branches[branchIndex].splits[splitIndex].actions[actionIndex].deltaString = deltaString;
+		const [delta, error] = stringToDelta(deltaString);
+		if (error) {
+			state.routeState.branches[branchIndex].splits[splitIndex].actions[actionIndex].deltaError = error;
+			state.routeState.branches[branchIndex].splits[splitIndex].actions[actionIndex].deltas = null;
+		} else {
+			if (delta !== null) {
+				const names = Object.keys(delta);
+				const invalidNames = getInvalidItemNamesIn(state, names);
+				if (invalidNames.length > 0) {
+					const message = `Undefined item(s): ${invalidNames.join(", ")}`;
+					state.routeState.branches[branchIndex].splits[splitIndex].actions[actionIndex].deltaError = message;
+					state.routeState.branches[branchIndex].splits[splitIndex].actions[actionIndex].deltas = null;
+					return;
+				}
+			}
+
+			state.routeState.branches[branchIndex].splits[splitIndex].actions[actionIndex].deltaError = null;
+			state.routeState.branches[branchIndex].splits[splitIndex].actions[actionIndex].deltas = delta;
+		}
+	},
+	deleteAction(state: ReduxGlobalState, action: PayloadAction<{ branchIndex?: number, splitIndex?: number, actionIndex: number }>): void {
+		let { branchIndex, splitIndex } = action.payload;
+		const { actionIndex } = action.payload;
+		branchIndex = branchIndex ?? getActiveBranch(state);
+		splitIndex = splitIndex ?? getActiveSplit(state);
+
+		if (!validateAction(state, branchIndex, splitIndex, actionIndex)) {
+			return;
+		}
+
+		state.routeState.branches[branchIndex].splits[splitIndex].actions.splice(actionIndex, 1);
+		if (getActiveBranch(state) === branchIndex && getActiveSplit(state) === splitIndex) {
+			const activeAction = getActiveAction(state);
+			if (activeAction === actionIndex) {
+				state.routeState.activeAction = -1;
+			} else if (activeAction > actionIndex) {
+				state.routeState.activeAction -= 1;
+			}
+		}
+	},
+	swapActions(state: ReduxGlobalState, action: PayloadAction<{ branchIndex?: number, splitIndex?: number, i: number, j: number }>): void {
+		let { branchIndex, splitIndex } = action.payload;
+		const { i, j } = action.payload;
+		branchIndex = branchIndex ?? getActiveBranch(state);
+		splitIndex = splitIndex ?? getActiveSplit(state);
+
+		if (!validateAction(state, branchIndex, splitIndex, i) || !validateAction(state, branchIndex, splitIndex, j)) {
+			return;
+		}
+
+		const temp = state.routeState.branches[branchIndex].splits[splitIndex].actions[i];
+		state.routeState.branches[branchIndex].splits[splitIndex].actions[i] = state.routeState.branches[branchIndex].splits[splitIndex].actions[j];
+		state.routeState.branches[branchIndex].splits[splitIndex].actions[j] = temp;
+		if (getActiveBranch(state) === branchIndex && getActiveSplit(state) === splitIndex) {
+			const activeAction = getActiveAction(state);
+			if (activeAction === i) {
+				state.routeState.activeAction = j;
+			} else if (activeAction === j) {
+				state.routeState.activeAction = i;
+			}
+		}
+	},
 };

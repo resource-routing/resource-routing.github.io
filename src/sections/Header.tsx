@@ -1,4 +1,4 @@
-import { connect } from "react-redux";
+import { connect, ConnectedProps } from "react-redux";
 import ExpandButton from "components/ExpandButton";
 import {
 	isHeaderCollapsed,
@@ -14,16 +14,39 @@ import {
 import {
 	setHeaderCollapsed
 } from "store/application/actions";
-import { bindActionCreators } from "@reduxjs/toolkit";
-export function Header({ autoSaveEnabled, linkToMapEnabled, projectName, headerCollapsed, sideCollapsed, actions }) {
+import { bindActionCreators, Dispatch } from "@reduxjs/toolkit";
+import { AppAction } from "apptype";
+import { ReduxGlobalState } from "store/store";
+
+type ExternalProps = {
+	appActions: AppAction,
+}
+
+const mapStateToProps = (state: ReduxGlobalState) => ({
+	projectName: getProjectName(state),
+	autoSaveEnabled: isAutoSaveEnabled(state),
+	linkToMapEnabled: isObjectMapLinkEnabled(state),
+	sideCollapsed: isSideSectionCollapsed(state),
+	headerCollapsed: isHeaderCollapsed(state),
+});
+
+const mapDispatchToProps = (dispatch: Dispatch) => ({
+	actions: bindActionCreators({
+		setHeaderCollapsed
+	}, dispatch)
+});
+
+const connector = connect(mapStateToProps, mapDispatchToProps);
+
+type Props = ConnectedProps<typeof connector> & ExternalProps;
+
+export const Header: React.FunctionComponent<Props> = ({ autoSaveEnabled, linkToMapEnabled, projectName, headerCollapsed, sideCollapsed, actions }) => {
 	// const [file, setFile] = useState(undefined);
-	const exportButton = (
-		<button className="vertical-center space-left-small" disabled>Import/Export</button>
-	);
-	const saveButton = (
-		<button className="vertical-center space-left-small" disabled>Save</button>
-	);
-	const buttonSection = (
+	const exportButton = <button className="vertical-center space-left-small" disabled>Import/Export</button>;
+
+	const saveButton = <button className="vertical-center space-left-small" disabled>Save</button>;
+
+	const buttonSection =
 		<span>
 			<button className="vertical-center space-left-small" disabled>Edit Project Name</button>
 			{/* <input className="vertical-center space-left-small" type="file" onChange={(e) => {
@@ -38,15 +61,14 @@ export function Header({ autoSaveEnabled, linkToMapEnabled, projectName, headerC
 			<button className="vertical-center space-left-small" disabled>Force Update Resources</button>
 			<button className="vertical-center space-left-small" disabled>Help</button>
 			<button className="vertical-center space-left-small" disabled>Reset</button>
-		</span>
-	);
-	const allButtons = (
+		</span>;
+
+	const allButtons =
 		<span>
 			{!headerCollapsed && buttonSection}
 			{headerCollapsed && exportButton}
 			{headerCollapsed && saveButton}
-		</span>
-	);
+		</span>;
 
 	return (
 		<div className="overflow-hidden">
@@ -60,26 +82,11 @@ export function Header({ autoSaveEnabled, linkToMapEnabled, projectName, headerC
 
 			<ExpandButton expanded={!headerCollapsed} setExpanded={(expanded) => actions.setHeaderCollapsed({ collapsed: !expanded })} />
 
-
 			{!sideCollapsed && allButtons}
 
 		</div>
 
 	);
-}
+};
 
-const mapStateToProps = (state) => ({
-	projectName: getProjectName(state),
-	autoSaveEnabled: isAutoSaveEnabled(state),
-	linkToMapEnabled: isObjectMapLinkEnabled(state),
-	sideCollapsed: isSideSectionCollapsed(state),
-	headerCollapsed: isHeaderCollapsed(state),
-});
-
-const mapDispatchToProps = (dispatch) => ({
-	actions: bindActionCreators({
-		setHeaderCollapsed
-	}, dispatch)
-});
-
-export default connect(mapStateToProps, mapDispatchToProps)(Header);
+export default connector(Header);

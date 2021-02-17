@@ -1,30 +1,10 @@
-import { BranchData, RouteBranch, deflateRouteBranch, inflateBranchData } from "./branch";
-import { ItemData, RouteItem, deflateRouteItem, inflateItemData } from "./item";
+import { BranchData, deflateRouteBranch, inflateBranchData } from "./branch";
+import { ItemData, deflateRouteItem, inflateItemData } from "./item";
 import { RouteState } from "store/routing/type";
 export type RouteData = {
 	projectName: string,
 	branches: BranchData[],
 	items: ItemData[],
-}
-
-export type RouteResources = {
-	error: ResourceError,
-	content: ActionResource[],
-	progress: number,
-	total: number,
-}
-
-export type ResourceError = {
-	branch: number,
-	split: number,
-	action: number,
-	message: string,
-} | null;
-
-export type ActionResource = Record<string, ActionResourceItem>
-export type ActionResourceItem = {
-	value: number,
-	change: number,
 }
 
 export function deflateRouteState(state: RouteState): RouteData {
@@ -45,11 +25,3 @@ export function inflateRouteData(data: RouteData): RouteState {
 		items: (data.items || []).map(inflateItemData),
 	};
 }
-
-
-
-
-
-
-
-

@@ -23,6 +23,8 @@ import {
 import {
 	setInfo,
 	setSplitClipboard,
+	setEditingActions,
+	markResourceDirtyAtSplit,
 } from "store/application/actions";
 import { getSplitClipboard } from "store/application/selectors";
 import { bindActionCreators, Dispatch } from "@reduxjs/toolkit";
@@ -60,6 +62,8 @@ const mapDispatchToProps = (dispatch: Dispatch) => ({
 		moveFirstSplitToPreviousBranch,
 		moveLastSplitToNextBranch,
 		setActiveBranchAndSplit,
+		setEditingActions,
+		markResourceDirtyAtSplit,
 	}, dispatch)
 });
 
@@ -91,6 +95,10 @@ export const Split: React.FunctionComponent<Props> = ({
 				branchIndex: branchIndex,
 				splitIndex: splitIndex + 1,
 				templateSplit: templateSplit,
+			});
+			actions.markResourceDirtyAtSplit({
+				branchIndex: branchIndex,
+				splitIndex: splitIndex,
 			});
 			actions.setInfo({ info: `Split created. (${benchEnd(startTime)} ms)` });
 		}
@@ -127,6 +135,10 @@ export const Split: React.FunctionComponent<Props> = ({
 								actions.setInfo({ info: `Split moved into previous branch. (${benchEnd(startTime)} ms)` });
 							} else {
 								actions.swapSplits({ branchIndex, i: splitIndex, j: splitIndex - 1 });
+								actions.markResourceDirtyAtSplit({
+									branchIndex: branchIndex,
+									splitIndex: splitIndex - 1,
+								});
 								actions.setInfo({ info: `Split moved. (${benchEnd(startTime)} ms)` });
 							}
 						}} >&uarr;</button>
@@ -142,6 +154,10 @@ export const Split: React.FunctionComponent<Props> = ({
 								actions.setInfo({ info: `Split moved into next branch. (${benchEnd(startTime)} ms)` });
 							} else {
 								actions.swapSplits({ branchIndex, i: splitIndex, j: splitIndex + 1 });
+								actions.markResourceDirtyAtSplit({
+									branchIndex: branchIndex,
+									splitIndex: splitIndex,
+								});
 								actions.setInfo({ info: `Split moved. (${benchEnd(startTime)} ms)` });
 							}
 						}} >&darr;</button>
@@ -174,6 +190,10 @@ export const Split: React.FunctionComponent<Props> = ({
 								execute: () => {
 									const startTime = benchStart();
 									actions.deleteSplit({ branchIndex, splitIndex });
+									actions.markResourceDirtyAtSplit({
+										branchIndex: branchIndex,
+										splitIndex: splitIndex,
+									});
 									actions.setInfo({ info: `Split deleted. (${benchEnd(startTime)} ms)` });
 								}
 							}]
@@ -197,12 +217,15 @@ export const Split: React.FunctionComponent<Props> = ({
 							activeBranch: branchIndex,
 							activeSplit: splitIndex,
 						});
+						actions.setEditingActions({ editing: false });
 					}}>{displayName}</u>
 				</td>
 			</tr>;
 	}
-	if (!expanded)
+	if (!expanded) {
 		return splitNode;
+	}
+
 	return <>{splitNode}<ActionSummary branchIndex={branchIndex} splitIndex={splitIndex} /></>;
 };
 

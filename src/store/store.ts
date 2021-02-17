@@ -7,7 +7,6 @@ import testInitialState from "store/initial";
 import { SettingState } from "store/setting/type";
 import { ApplicationState } from "store/application/type";
 
-
 export type ReduxGlobalState = {
 	routeState: RouteState,
 	settingState: SettingState,

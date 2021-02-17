@@ -2,13 +2,15 @@ import ItemEdit from "./ItemEdit";
 import ItemDisplay from "./ItemDisplay";
 import { AppAction } from "apptype";
 import {
+	getActiveGlobalIndex,
 	getFilteredItemIndices,
-	getItemCount
+	getItemCount,
+	getItemNameByIndex,
 } from "store/routing/selectors";
 import { ReduxGlobalState } from "store/store";
 import { getItemFilter } from "store/setting/selectors";
-import { isEditingItems } from "store/application/selectors";
-import { ActionCreatorWithPayload, bindActionCreators, Dispatch } from "@reduxjs/toolkit";
+import { getActionResourceByGlobalIndex, isEditingItems, isOnlyShowingChangedResources } from "store/application/selectors";
+import { bindActionCreators, Dispatch } from "@reduxjs/toolkit";
 import { connect, ConnectedProps } from "react-redux";
 import { ITEM_LIMIT } from "data/limit";
 import {
@@ -21,17 +23,29 @@ type ExternalProps = {
 	appActions: AppAction,
 }
 
-const mapStateToProps = (state: ReduxGlobalState, ownProps: ExternalProps) => {
+const mapStateToProps = (state: ReduxGlobalState) => {
 	const filterString = getItemFilter(state);
-	const filter = (!filterString) ? [] : filterString.split(",").map(s => s.trim());
+	const filter = !filterString ? [] : filterString.split(",").map(s => s.trim());
+
+	const globalIndex = getActiveGlobalIndex(state);
+	const deltas = globalIndex ? getActionResourceByGlobalIndex(state, globalIndex) : undefined;
+
+	let filteredIndices = getFilteredItemIndices(state, filter);
+	const showOnlyChanged = isOnlyShowingChangedResources(state);
+	if (showOnlyChanged && deltas && Object.keys(deltas).length !== 0) {
+		filteredIndices = filteredIndices.filter(i => getItemNameByIndex(state, i) in deltas);
+	}
+
 	return {
-		itemIndices: getFilteredItemIndices(state, filter),
+		itemIndices: filteredIndices,
 		editing: isEditingItems(state),
 		itemCount: getItemCount(state),
+		getItemNameByIndex: (i: number) => getItemNameByIndex(state, i),
+		deltas,
 	};
 };
 
-const mapDispatchToProps = (dispatch: Dispatch, ownProps: ExternalProps) => ({
+const mapDispatchToProps = (dispatch: Dispatch) => ({
 	actions: bindActionCreators({
 		setInfo,
 		createItem,
@@ -42,7 +56,7 @@ const connector = connect(mapStateToProps, mapDispatchToProps);
 
 type Props = ConnectedProps<typeof connector> & ExternalProps;
 
-const ItemList: React.FunctionComponent<Props> = ({ itemIndices, editing, actions, appActions, itemCount }) => {
+const ItemList: React.FunctionComponent<Props> = ({ itemIndices, deltas, getItemNameByIndex, editing, actions, appActions, itemCount }) => {
 	let itemSection;
 
 	if (editing) {
@@ -56,26 +70,19 @@ const ItemList: React.FunctionComponent<Props> = ({ itemIndices, editing, action
 	} else {
 		itemSection = [];
 		for (let i = 0; i < itemIndices.length; i += 4) {
-
-			itemSection.push(
+			const row =
 				<tr key={i}>
-					{<ItemDisplay
-						index={itemIndices[i]}
-						delta={undefined} />}
-					{i + 1 < itemIndices.length &&
-						<ItemDisplay
-							index={itemIndices[i + 1]}
-							delta={undefined} />}
-					{i + 2 < itemIndices.length &&
-						<ItemDisplay
-							index={itemIndices[i + 2]}
-							delta={undefined} />}
-					{i + 3 < itemIndices.length &&
-						<ItemDisplay
-							index={itemIndices[i + 3]}
-							delta={undefined} />}
-				</tr>
-			);
+					{[i, i + 1, i + 2, i + 3].map(i => {
+						if (i >= itemIndices.length) {
+							return null;
+						}
+						const index = itemIndices[i];
+						const name = getItemNameByIndex(index);
+						const delta = deltas ? deltas[name] : undefined;
+						return <ItemDisplay key={i} index={itemIndices[i]} delta={delta} />;
+					})}
+				</tr>;
+			itemSection.push(row);
 		}
 	}
 	return (
@@ -104,7 +111,5 @@ const ItemList: React.FunctionComponent<Props> = ({ itemIndices, editing, action
 		</table>
 	);
 };
-
-
 
 export default connector(ItemList);

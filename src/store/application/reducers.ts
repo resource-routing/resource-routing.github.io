@@ -1,8 +1,18 @@
 import { PayloadAction } from "@reduxjs/toolkit";
 import layout, { LayoutOption } from "util/layout";
 import { ReduxGlobalState } from "store/store";
-import { isResourcesSectionHidden, isSideSectionShrunk, isHeaderCollapsed, isSideSectionCollapsed, isActionSectionCollapsed } from "./selectors";
+import {
+	isResourcesSectionHidden,
+	isSideSectionShrunk,
+	isHeaderCollapsed,
+	isSideSectionCollapsed,
+	isActionSectionCollapsed,
+	getResourceCalcProgress,
+	getResourceCalcError
+} from "./selectors";
 import { RouteSplit } from "data/split";
+import { getActiveBranch, getActiveSplit, getGlobalActionIndex } from "store/routing/selectors";
+import { ActionResource, ResourceError } from "data/resource";
 
 function layoutOption(state: ReduxGlobalState): LayoutOption {
 	return {
@@ -13,6 +23,23 @@ function layoutOption(state: ReduxGlobalState): LayoutOption {
 		noResources: isResourcesSectionHidden(state)
 	};
 }
+
+function markResourceDirty(state: ReduxGlobalState, globalIndex: number): void {
+	const currentProgress = getResourceCalcProgress(state);
+	if (currentProgress >= 0 && currentProgress < globalIndex) {
+		return;
+	}
+	state.applicationState.resources.progress = globalIndex;
+	const error = getResourceCalcError(state);
+	if (error !== null) {
+		const { branch, split, action } = error;
+		const errorGlobalIndex = getGlobalActionIndex(state, branch, split, action);
+		if (errorGlobalIndex >= globalIndex) {
+			state.applicationState.resources.error = null;
+		}
+	}
+}
+
 const SHRINK_SIDE_WHEN_LESS_THAN = 1550;
 const HIDE_RESOURCES_WHEN_LESS_THAN = 700;
 export default {
@@ -69,5 +96,28 @@ export default {
 	},
 	setSplitClipboard(state: ReduxGlobalState, action: PayloadAction<{ split: RouteSplit }>): void {
 		state.applicationState.splitClipboard = action.payload.split;
+	},
+	setResourceContent(state: ReduxGlobalState, action: PayloadAction<{ globalIndex: number, content: ActionResource }>): void {
+		const { globalIndex, content } = action.payload;
+		state.applicationState.resources.content[globalIndex] = content;
+		state.applicationState.resources.progress = globalIndex + 1;
+	},
+	setResourceError(state: ReduxGlobalState, action: PayloadAction<{ error: ResourceError }>): void {
+		state.applicationState.resources.error = action.payload.error;
+	},
+	markResourceDirtyAt(state: ReduxGlobalState, action: PayloadAction<{ globalIndex: number }>): void {
+		const { globalIndex } = action.payload;
+		markResourceDirty(state, globalIndex);
+	},
+	markResourceDirtyAtSplit(state: ReduxGlobalState, action: PayloadAction<{ branchIndex?: number, splitIndex?: number }>): void {
+		let { branchIndex, splitIndex } = action.payload;
+		branchIndex = branchIndex ?? getActiveBranch(state);
+		splitIndex = splitIndex ?? getActiveSplit(state);
+
+		const globalIndex = getGlobalActionIndex(state, branchIndex, splitIndex, 0);
+		markResourceDirty(state, globalIndex);
+	},
+	setShowOnlyChangedResources(state: ReduxGlobalState, action: PayloadAction<{ showOnlyChangedResources: boolean }>): void {
+		state.applicationState.showOnlyChangedResources = action.payload.showOnlyChangedResources;
 	}
 };

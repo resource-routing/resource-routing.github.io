@@ -1,6 +1,6 @@
 import { RouteSplit } from "data/split";
 import { Layout } from "util/layout";
-import { RouteResources } from "data/object";
+import { RouteResources } from "data/resource";
 
 export type ApplicationState = {
 	info: string,
@@ -14,6 +14,6 @@ export type ApplicationState = {
 	editingItems: boolean,
 	editingActions: boolean,
 	splitClipboard: RouteSplit | undefined,
-	itemsInfo: string,
 	resources: RouteResources,
+	showOnlyChangedResources: boolean,
 }

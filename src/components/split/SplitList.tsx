@@ -12,7 +12,8 @@ import {
 	mergeNextIntoBranch,
 } from "store/routing/actions";
 import {
-	setInfo
+	setInfo,
+	markResourceDirtyAtSplit,
 } from "store/application/actions";
 import { bindActionCreators, Dispatch } from "@reduxjs/toolkit";
 import { benchEnd, benchStart } from "util/benchmark";
@@ -40,6 +41,7 @@ const mapDispatchToProps = (dispatch: Dispatch) => ({
 		createSplit,
 		setInfo,
 		mergeNextIntoBranch,
+		markResourceDirtyAtSplit,
 	}, dispatch)
 });
 
@@ -70,6 +72,10 @@ export const SplitList: React.FunctionComponent<Props> = ({
 				branchIndex: branchIndex,
 				splitIndex: length,
 				templateSplit: templateSplit,
+			});
+			actions.markResourceDirtyAtSplit({
+				branchIndex: branchIndex,
+				splitIndex: length,
 			});
 			actions.setInfo({ info: `Split created. (${benchEnd(startTime)} ms)` });
 		}

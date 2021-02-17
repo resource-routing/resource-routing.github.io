@@ -13,6 +13,7 @@ export const {
 	createSplit,
 	setSplitName,
 	setSplitExpanded,
+	setSplitCoords,
 	deleteSplit,
 	swapSplits,
 	moveFirstSplitToPreviousBranch,
@@ -23,4 +24,9 @@ export const {
 	swapItems,
 	deleteItem,
 	createAction,
+	setActionName,
+	setActionExpanded,
+	deleteAction,
+	swapActions,
+	setActionDeltaString,
 } = actions;

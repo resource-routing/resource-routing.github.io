@@ -2,9 +2,9 @@ import { defaultLayout } from "util/layout";
 export default {
 	routeState: {
 		projectName: "Test Project Name",
-		activeBranch: 0,
-		activeSplit: 1,
-		activeAction: 1,
+		activeBranch: -1,
+		activeSplit: -1,
+		activeAction: -1,
 		branches: [{
 			name: "Test Branch 1",
 			expanded: true,
@@ -72,8 +72,6 @@ export default {
 			name: "item2",
 			color: "blue",
 		}],
-
-
 	},
 	settingState: {
 		autoSave: false,
@@ -111,19 +109,12 @@ export default {
 		editingActions: false,
 		editingItems: false,
 		info: "",
-		splitClipboard: {
-			name: "clip",
-			expanded: false,
-			mapX: 0,
-			mapY: 0,
-			actions: [],
-		},
-		itemsInfo: "Hello",
+		splitClipboard: undefined,
 		resources: {
 			error: null,
 			content: [],
-			progress: 0,
-			total: 0,
+			progress: -1,
 		},
+		showOnlyChangedResources: false,
 	}
 };

@@ -10,8 +10,9 @@ import {
 import {
 	setEditingNav,
 	setInfo,
+	markResourceDirtyAtSplit,
 } from "store/application/actions";
-import { ActionCreatorWithPayload, bindActionCreators, Dispatch } from "@reduxjs/toolkit";
+import { bindActionCreators, Dispatch } from "@reduxjs/toolkit";
 import { BRANCH_LIMIT } from "data/limit";
 import { benchStart, benchEnd } from "util/benchmark";
 import { AppAction } from "apptype";
@@ -30,6 +31,7 @@ const mapDispatchToProps = (dispatch: Dispatch) => ({
 		createBranch,
 		setEditingNav,
 		setInfo,
+		markResourceDirtyAtSplit,
 	}, dispatch)
 });
 
@@ -38,7 +40,9 @@ const connector = connect(mapStateToProps, mapDispatchToProps);
 type Props = ConnectedProps<typeof connector> & ExternalProps;
 
 export const BranchList: React.FunctionComponent<Props> = ({ length, actions, appActions }: Props) => {
-	if (length === 0) return null;
+	if (length === 0) {
+		return null;
+	}
 	const branchNodes = [];
 	for (let i = 0; i < length; i++) {
 		branchNodes.push(<Branch
@@ -61,6 +65,10 @@ export const BranchList: React.FunctionComponent<Props> = ({ length, actions, ap
 							} else {
 								const startTime = benchStart();
 								actions.createBranch({ branchIndex: length });
+								actions.markResourceDirtyAtSplit({
+									branchIndex: length,
+									splitIndex: 0,
+								});
 								actions.setEditingNav({ editing: true });
 								actions.setInfo({ info: `Branch created. (${benchEnd(startTime)} ms)` });
 							}

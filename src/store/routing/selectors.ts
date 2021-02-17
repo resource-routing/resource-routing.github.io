@@ -5,7 +5,6 @@ import { RouteItem } from "data/item";
 import { RouteState } from "./type";
 import { RouteSplit } from "data/split";
 import { ReduxGlobalState } from "store/store";
-import { ReactNode } from "react";
 
 export function getRouteState(state: ReduxGlobalState): RouteState {
 	return state.routeState;
@@ -21,6 +20,16 @@ export function getActiveBranch(state: ReduxGlobalState): number {
 
 export function getActiveSplit(state: ReduxGlobalState): number {
 	return getRouteState(state).activeSplit;
+}
+
+export function getActiveGlobalIndex(state: ReduxGlobalState): number | undefined {
+	const branch = getActiveBranch(state);
+	const split = getActiveSplit(state);
+	const action = getActiveAction(state);
+	if (branch >= 0 && split >= 0 && action >= 0) {
+		return getGlobalActionIndex(state, branch, split, action);
+	}
+	return undefined;
 }
 
 function getActiveRouteSplit(state: ReduxGlobalState): RouteSplit | undefined {
@@ -75,6 +84,15 @@ export function getActiveAction(state: ReduxGlobalState): number {
 	return getRouteState(state).activeAction;
 }
 
+export function getActiveActionName(state: ReduxGlobalState): string | undefined {
+	const activeAction = getActiveAction(state);
+	if (activeAction < 0) {
+		return undefined;
+	}
+	const action = getActiveSplitAction(state, activeAction);
+	return action?.name;
+}
+
 function getBranches(state: ReduxGlobalState): RouteBranch[] {
 	return getRouteState(state).branches;
 }
@@ -115,6 +133,11 @@ export function isSplitExpanded(state: ReduxGlobalState, branchIndex: number, sp
 	return getSplit(state, branchIndex, splitIndex).expanded;
 }
 
+export function getSplitCoords(state: ReduxGlobalState, branchIndex: number, splitIndex: number): [number, number, number] {
+	const split = getSplit(state, branchIndex, splitIndex);
+	return [split.mapX, split.mapY, split.mapZ];
+}
+
 function getActions(state: ReduxGlobalState, branchIndex: number, splitIndex: number): RouteAction[] {
 	return getSplit(state, branchIndex, splitIndex).actions;
 }
@@ -135,6 +158,14 @@ export function getActionName(state: ReduxGlobalState, branchIndex: number, spli
 	return getAction(state, branchIndex, splitIndex, actionIndex).name;
 }
 
+export function getActionDeltas(state: ReduxGlobalState, branchIndex: number, splitIndex: number, actionIndex: number): ActionDelta | null {
+	return getAction(state, branchIndex, splitIndex, actionIndex).deltas;
+}
+
+export function getActionDeltaError(state: ReduxGlobalState, branchIndex: number, splitIndex: number, actionIndex: number): DeltaError {
+	return getAction(state, branchIndex, splitIndex, actionIndex).deltaError;
+}
+
 export function getGlobalActionIndex(state: ReduxGlobalState, branchIndex: number, splitIndex: number, actionIndex: number): number {
 	let i = 0;
 	for (let b = 0; b < branchIndex; b++) {
@@ -153,24 +184,21 @@ export function getTotalActionCount(state: ReduxGlobalState): number {
 	let i = 0;
 	getBranches(state).forEach(branch => {
 		branch.splits.forEach(split => {
-			split.actions.forEach(_ => {
-				i++;
-			});
+			i += split.actions.length;
 		});
 	});
 	return i;
 }
 
 export function getActionIndexFromGlobal(state: ReduxGlobalState, globalIndex: number): [number, number, number] {
-	let i = 0;
+	let i = globalIndex;
 	for (let b = 0; b < getBranchCount(state); b++) {
 		for (let s = 0; s < getSplitCount(state, b); s++) {
-			for (let a = 0; a < getActionCount(state, b, s); a++) {
-				if (i == globalIndex) {
-					return [b, s, a];
-				}
-				i++;
+			const actionCount = getActionCount(state, b, s);
+			if (i < actionCount) {
+				return [b, s, i];
 			}
+			i -= actionCount;
 		}
 	}
 	const branch = getBranchCount(state);
@@ -185,7 +213,9 @@ function getItems(state: ReduxGlobalState): RouteItem[] {
 
 function getItemByName(state: ReduxGlobalState, name: string): RouteItem | undefined {
 	const match = getItems(state).filter(item => item.name === name);
-	if (match.length === 0) return undefined;
+	if (match.length === 0) {
+		return undefined;
+	}
 	return match[0];
 }
 
@@ -194,7 +224,9 @@ export function getItemColorByName(state: ReduxGlobalState, name: string): strin
 }
 
 export function getFilteredItemIndices(state: ReduxGlobalState, filter: string[]): number[] {
-	if (filter.length === 0) return getItems(state).map((_, i) => i);
+	if (filter.length === 0) {
+		return getItems(state).map((_, i) => i);
+	}
 	const lowerCaseFilter = filter.map(s => s.toLowerCase());
 	const indices: number[] = [];
 	getItems(state).forEach((item, itemIndex) => {
@@ -218,5 +250,28 @@ export function getItemColorByIndex(state: ReduxGlobalState, i: number): string 
 
 export function getItemCount(state: ReduxGlobalState): number {
 	return getItems(state).length;
+}
+
+export function getInvalidItemNamesIn(state: ReduxGlobalState, names: string[]): string[] {
+	const validNames = getItems(state).map(item => item.name).sort();
+	names.sort();
+	let i = 0;
+	let j = 0;
+	const invalidNames = [];
+	while (i < validNames.length && j < names.length) {
+		if (names[j] < validNames[i]) {
+			invalidNames.push(names[j]);
+			j++;
+		} else if (names[j] > validNames[i]) {
+			i++;
+		} else {
+			i++;
+			j++;
+		}
+	}
+	for (; j < names.length; j++) {
+		invalidNames.push(names[j]);
+	}
+	return invalidNames;
 }
 

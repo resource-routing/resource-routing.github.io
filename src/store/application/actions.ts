@@ -11,4 +11,9 @@ export const {
 	setEditingItems,
 	setInfo,
 	setSplitClipboard,
+	setResourceContent,
+	setResourceError,
+	markResourceDirtyAt,
+	markResourceDirtyAtSplit,
+	setShowOnlyChangedResources,
 } = actions;

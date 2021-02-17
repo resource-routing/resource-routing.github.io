@@ -6,7 +6,6 @@ import {
 } from "store/routing/selectors";
 import { ReduxGlobalState } from "store/store";
 
-
 type RenderExternalProps = {
 	branchIndex: number,
 	splitIndex: number,
@@ -22,20 +21,18 @@ const renderConnector = connect(mapStateToPropsForActionSummaryItemRender);
 type RenderProps = ConnectedProps<typeof renderConnector> & RenderExternalProps;
 
 const ActionSummaryItemRender: React.FunctionComponent<RenderProps> = ({ isNote, name }: RenderProps) => {
+	const displayName = name || "[Unnamed Action]";
 	return <tr>
 		<td />
 		<td />
 		<td className="icon-button-width" >&gt;</td>
 		<td colSpan={8} >
-			{isNote ? <em>{name}</em> : name}
+			{isNote ? <em>{displayName}</em> : displayName}
 		</td>
 	</tr>;
 };
 
-
-
 const ActionSummaryItem = connect(mapStateToPropsForActionSummaryItemRender)(ActionSummaryItemRender);
-
 
 type ExternalProps = {
 	branchIndex: number,
@@ -61,6 +58,5 @@ export const ActionSummary: React.FunctionComponent<Props> = ({ length, branchIn
 	}
 	return <>{nodes}</>;
 };
-
 
 export default connector(ActionSummary);

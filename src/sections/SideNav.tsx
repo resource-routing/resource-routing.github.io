@@ -12,8 +12,7 @@ import {
 	setSideCollapsed,
 	setEditingNav
 } from "store/application/actions";
-import { ActionCreatorWithPayload, bindActionCreators, Dispatch } from "@reduxjs/toolkit";
-import { Bounds } from "util/layout";
+import { bindActionCreators, Dispatch } from "@reduxjs/toolkit";
 import { AppAction } from "apptype";
 import { ReduxGlobalState } from "store/store";
 
@@ -47,12 +46,12 @@ export const SideNav: React.FunctionComponent<Props> = ({
 	appActions,
 	editing,
 }: Props) => {
-	const buttonSection = (
+	const buttonSection =
 		<span>
 			<button className="space-left-small" onClick={() => actions.setEditingNav({ editing: !editing })} >{editing ? "Finish" : "Edit"}</button>
 			<button className="space-left-small" disabled >Collapse All</button>
-		</span>
-	);
+		</span>;
+
 	return (
 		<div>
 			<Box layout={sideMainBounds} borderClass="overflow-auto">
@@ -72,7 +71,5 @@ export const SideNav: React.FunctionComponent<Props> = ({
 		</div>
 	);
 };
-
-
 
 export default connector(SideNav);
