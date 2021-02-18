@@ -83,27 +83,6 @@ export const ActionItem: React.FunctionComponent<Props> = ({
 		actionNode =
 			<tr>
 				{expandButton}
-				<td className="action-name-width">
-					<input
-						className="action-name-width"
-						placeholder="Action Title/Notes"
-						type="text"
-						value={name}
-						onChange={(e) => {
-							actions.setActionName({ actionIndex: index, name: e.target.value });
-						}} />
-				</td>
-				<td>
-					<input
-						className="full-width"
-						placeholder="Delta String"
-						type="text"
-						value={deltaString}
-						onChange={(e) => {
-							actions.setActionDeltaString({ actionIndex: index, deltaString: e.target.value });
-							actions.markResourceDirtyAtSplit({});
-						}} />
-				</td>
 				<td className="icon-button-width">
 					{!isFirst &&
 						<button className="icon-button" disabled={isFirst} title="Move up" onClick={() => {
@@ -158,6 +137,28 @@ export const ActionItem: React.FunctionComponent<Props> = ({
 						}
 					}}>*</button>
 				</td>
+				<td className="action-name-width">
+					<input
+						className="action-name-width"
+						placeholder="Action Title/Notes"
+						type="text"
+						value={name}
+						onChange={(e) => {
+							actions.setActionName({ actionIndex: index, name: e.target.value });
+						}} />
+				</td>
+				<td>
+					<input
+						className="full-width"
+						placeholder="Delta String"
+						type="text"
+						value={deltaString}
+						onChange={(e) => {
+							actions.setActionDeltaString({ actionIndex: index, deltaString: e.target.value });
+							actions.markResourceDirtyAtSplit({});
+						}} />
+				</td>
+
 			</tr>;
 	} else {
 		actionNode =

@@ -61,43 +61,6 @@ const ItemEdit: React.FunctionComponent<Props> = ({ name, color, foreground, bac
 	const [renamed, setRenamed] = useState("");
 	return (
 		<tr>
-			<td className="icon-button-width"
-				style={{
-					backgroundColor: background,
-					color: foreground
-				}}>
-				{index + 1}.
-			</td>
-			<td>
-				<input
-					className="full-width"
-					placeholder={name || "[Unnamed]"}
-					type="text"
-					value={renamed}
-					onChange={(e) => {
-						setRenamed(e.target.value);
-					}} />
-
-			</td>
-			<td className="icon-button-width">
-				<button disabled={!renamed || renamed === name} className="icon-button" title="Apply rename" onClick={() => {
-					const startTime = benchStart();
-					actions.setItemName({ index, name: renamed });
-					setRenamed("");
-					actions.setInfo({ info: `Item renamed. (${benchEnd(startTime)} ms)` });
-				}}>R</button>
-			</td>
-			<td>
-				<input
-
-					className="full-width"
-					placeholder="Color (e.g, red, #FF0000, rgb(255, 0, 0)"
-					type="text"
-					value={color}
-					onChange={(e) => {
-						actions.setItemColor({ index, color: e.target.value });
-					}} />
-			</td>
 			<td className="icon-button-width">
 				{!isFirst &&
 					<button className="icon-button" disabled={isFirst} title="Move up" onClick={() => {
@@ -152,6 +115,44 @@ const ItemEdit: React.FunctionComponent<Props> = ({ name, color, foreground, bac
 						actions.setInfo({ info: `Item created. (${benchEnd(startTime)} ms)` });
 					}
 				}}>*</button>
+			</td>
+			<td className="icon-button-width"
+				style={{
+					backgroundColor: background,
+					color: foreground
+				}}>
+				{index + 1}.
+			</td>
+			<td className="icon-button-width">
+				<button disabled={!renamed || renamed === name} className="icon-button" title="Apply rename" onClick={() => {
+					const startTime = benchStart();
+					actions.setItemName({ index, name: renamed });
+					setRenamed("");
+					actions.setInfo({ info: `Item renamed. (${benchEnd(startTime)} ms)` });
+				}}>R</button>
+			</td>
+			<td>
+				<input
+					className="full-width"
+					placeholder={name || "[Unnamed]"}
+					type="text"
+					value={renamed}
+					onChange={(e) => {
+						setRenamed(e.target.value);
+					}} />
+
+			</td>
+
+			<td>
+				<input
+
+					className="full-width"
+					placeholder="Color (e.g, red, #FF0000, rgb(255, 0, 0)"
+					type="text"
+					value={color}
+					onChange={(e) => {
+						actions.setItemColor({ index, color: e.target.value });
+					}} />
 			</td>
 
 		</tr>

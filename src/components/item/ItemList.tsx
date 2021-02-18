@@ -28,12 +28,15 @@ const mapStateToProps = (state: ReduxGlobalState) => {
 	const filter = !filterString ? [] : filterString.split(",").map(s => s.trim());
 
 	const globalIndex = getActiveGlobalIndex(state);
-	const deltas = globalIndex ? getActionResourceByGlobalIndex(state, globalIndex) : undefined;
+	const deltas = globalIndex !== undefined ? getActionResourceByGlobalIndex(state, globalIndex) : undefined;
 
 	let filteredIndices = getFilteredItemIndices(state, filter);
 	const showOnlyChanged = isOnlyShowingChangedResources(state);
 	if (showOnlyChanged && deltas && Object.keys(deltas).length !== 0) {
-		filteredIndices = filteredIndices.filter(i => getItemNameByIndex(state, i) in deltas);
+		filteredIndices = filteredIndices.filter(i => {
+			const name = getItemNameByIndex(state, i);
+			return name in deltas && deltas[name].change !== 0;
+		});
 	}
 
 	return {

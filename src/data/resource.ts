@@ -96,6 +96,12 @@ function updateAt(state: ReduxGlobalState, currentlyNeedToUpdate: number) {
 function calculateChange(before: ActionResource, deltas: ActionDelta): ActionResource {
 	const getAmountInBefore = (n: string) => n in before ? before[n].value : 0;
 	const after: ActionResource = {};
+	for (const name in before) {
+		after[name] = {
+			value: before[name].value,
+			change: 0,
+		};
+	}
 	for (const name in deltas) {
 		const { type, value } = deltas[name];
 		const oldAmount = getAmountInBefore(name);

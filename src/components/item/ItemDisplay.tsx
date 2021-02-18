@@ -25,6 +25,9 @@ type Props = ConnectedProps<typeof connector> & ExternalProps;
 
 function deltaString(delta: ItemDelta): string {
 	const { value, change } = delta;
+	if (change === 0) {
+		return `x${value}`;
+	}
 	return `x${value} (${change >= 0 ? "+" : ""}${change})`;
 }
 
