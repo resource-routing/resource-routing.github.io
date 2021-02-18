@@ -133,11 +133,6 @@ export function isSplitExpanded(state: ReduxGlobalState, branchIndex: number, sp
 	return getSplit(state, branchIndex, splitIndex).expanded;
 }
 
-export function getSplitCoords(state: ReduxGlobalState, branchIndex: number, splitIndex: number): [number, number, number] {
-	const split = getSplit(state, branchIndex, splitIndex);
-	return [split.mapX, split.mapY, split.mapZ];
-}
-
 function getActions(state: ReduxGlobalState, branchIndex: number, splitIndex: number): RouteAction[] {
 	return getSplit(state, branchIndex, splitIndex).actions;
 }
@@ -201,10 +196,7 @@ export function getActionIndexFromGlobal(state: ReduxGlobalState, globalIndex: n
 			i -= actionCount;
 		}
 	}
-	const branch = getBranchCount(state);
-	const split = getSplitCount(state, branch - 1);
-	const action = getActionCount(state, branch - 1, split - 1);
-	return [branch, split, action];
+	return [-1, -1, -1];
 }
 
 function getItems(state: ReduxGlobalState): RouteItem[] {

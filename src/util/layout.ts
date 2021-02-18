@@ -31,7 +31,7 @@ export type Layout = {
 		header: Bounds,
 		main: Bounds,
 	},
-	map: Bounds
+	//map: Bounds
 }
 
 export type Bounds = {
@@ -43,13 +43,12 @@ export type Bounds = {
 
 export type LayoutOption = {
 	sideCollapsed: boolean,
-	actionsCollapsed: boolean,
+	resourcesCollapsed: boolean,
 	headerCollapsed: boolean,
 	shrink: boolean,
-	noResources: boolean
 }
 
-export default function layout({ sideCollapsed, actionsCollapsed, headerCollapsed, shrink, noResources }: LayoutOption): Layout {
+export default function layout({ sideCollapsed, resourcesCollapsed, headerCollapsed, shrink }: LayoutOption): Layout {
 
 	const windowWidth = "100vw";
 	const windowHeight = "100vh";
@@ -67,21 +66,21 @@ export default function layout({ sideCollapsed, actionsCollapsed, headerCollapse
 
 	const RESOURCE_MIN_HEIGHT = "12rem";
 	const RESOURCE_HEIGHT = "30%";
-	const RESOURCE_WIDTH_SHRINK = "24rem";
+	// const RESOURCE_WIDTH_SHRINK = "24rem";
 	const RESOURCE_COLLAPSE_HEIGHT = "1.8rem";
-	const RESOURCE_HEADER_HEIGHT = "4.5rem";
+	const RESOURCE_HEADER_HEIGHT = "3.2rem";
 
-	const ACTION_MIN_WIDTH = "50rem";
+	// const ACTION_MIN_WIDTH = "50rem";
 
 	const headerHeight = headerCollapsed ? HEADER_HEIGHT : HEADER_EXPAND_HEIGHT;
-	const centerHeight = calc(windowHeight, "-", headerHeight, "-", FOOTER_HEIGHT);
+	const sideHeight = calc(windowHeight, "-", headerHeight, "-", FOOTER_HEIGHT);
 	const sideWidth = sideCollapsed ? SIDE_COLLAPSE_WIDTH : max(SIDE_MIN_WIDTH, min(SIDE_MAX_WIDTH, SIDE_WIDTH));
 	const mainWidth = calc(windowWidth, "-", sideWidth);
-	const resourceHeight = actionsCollapsed ? RESOURCE_COLLAPSE_HEIGHT : max(RESOURCE_MIN_HEIGHT, RESOURCE_HEIGHT);
+	const resourceHeight = resourcesCollapsed ? RESOURCE_COLLAPSE_HEIGHT : max(RESOURCE_MIN_HEIGHT, RESOURCE_HEIGHT);
 
-	const mapHeight = calc(windowHeight, "-", resourceHeight);
-	const actionWidth = shrink ? calc(windowWidth, "-", RESOURCE_WIDTH_SHRINK) : min(mainWidth, max(ACTION_MIN_WIDTH, calc("60%", "-", sideWidth)));
-	const actionY = calc(windowHeight, "-", FOOTER_HEIGHT, "-", resourceHeight);
+	const actionHeight = calc(windowHeight, "-", resourceHeight, "-", FOOTER_HEIGHT);
+	//const actionWidth = shrink ? calc(windowWidth, "-", RESOURCE_WIDTH_SHRINK) : min(mainWidth, max(ACTION_MIN_WIDTH, calc("60%", "-", sideWidth)));
+	const resourceY = calc(windowHeight, "-", FOOTER_HEIGHT, "-", resourceHeight);
 
 	return {
 		header: {
@@ -94,7 +93,7 @@ export default function layout({ sideCollapsed, actionsCollapsed, headerCollapse
 			x: "0",
 			y: headerHeight,
 			w: sideWidth,
-			h: shrink ? calc(centerHeight, "-", resourceHeight) : centerHeight,
+			h: shrink ? calc(sideHeight, "-", resourceHeight) : sideHeight,
 			header: {
 				x: "0",
 				y: "0",
@@ -115,9 +114,9 @@ export default function layout({ sideCollapsed, actionsCollapsed, headerCollapse
 			h: FOOTER_HEIGHT,
 		},
 		resources: {
-			x: shrink ? actionWidth : calc(sideWidth, "+", actionWidth),
-			y: actionY,
-			w: shrink ? RESOURCE_WIDTH_SHRINK : calc(mainWidth, "-", actionWidth),
+			x: shrink ? "0" : sideWidth,
+			y: resourceY,
+			w: shrink ? windowWidth : mainWidth,
 			h: resourceHeight,
 			// hide: noResources,
 			header: {
@@ -134,10 +133,10 @@ export default function layout({ sideCollapsed, actionsCollapsed, headerCollapse
 			},
 		},
 		actions: {
-			x: shrink ? "0" : sideWidth,
-			y: actionY,
-			w: noResources ? windowWidth : actionWidth,
-			h: resourceHeight,
+			x: sideWidth,
+			y: "0",
+			w: mainWidth,
+			h: actionHeight,
 			header: {
 				x: "0",
 				y: "0",
@@ -150,12 +149,6 @@ export default function layout({ sideCollapsed, actionsCollapsed, headerCollapse
 				w: "100%",
 				h: calc("100%", "-", SIDE_HEADER_HEIGHT),
 			},
-		},
-		map: {
-			x: sideWidth,
-			y: "0",
-			w: mainWidth,
-			h: mapHeight,
 		},
 	};
 

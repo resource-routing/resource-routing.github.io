@@ -13,9 +13,6 @@ const routeState: RouteState = {
 		expanded: true,
 		splits: [{
 			name: "Test B1 Split 1",
-			mapX: 0,
-			mapY: 0,
-			mapZ: 3,
 			expanded: true,
 			actions: [{
 				name: "B1S1 Action1",
@@ -32,9 +29,6 @@ const routeState: RouteState = {
 			}],
 		}, {
 			name: "Test B1 Split 2",
-			mapX: 0,
-			mapY: 0,
-			mapZ: 3,
 			expanded: true,
 			actions: [{
 				name: "B1S2 Action1",
@@ -54,16 +48,10 @@ const routeState: RouteState = {
 		expanded: true,
 		splits: [{
 			name: "Test B2 Split 1",
-			mapX: 0,
-			mapY: 0,
-			mapZ: 3,
 			expanded: false,
 			actions: [],
 		}, {
 			name: "Test B2 Split 2",
-			mapX: 0,
-			mapY: 0,
-			mapZ: 3,
 			expanded: true,
 			actions: [],
 		}]

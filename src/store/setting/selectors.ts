@@ -8,11 +8,6 @@ export function getSettingState(state: ReduxGlobalState): SettingState {
 export function isAutoSaveEnabled(state: ReduxGlobalState): boolean {
 	return getSettingState(state).autoSave;
 }
-
-export function isObjectMapLinkEnabled(state: ReduxGlobalState): boolean {
-	return getSettingState(state).linkObjectMap;
-}
-
 export function shouldOnlyShowChangedItem(state: ReduxGlobalState): boolean {
 	return getSettingState(state).onlyShowChangedItems;
 }

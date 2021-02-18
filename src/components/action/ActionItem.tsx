@@ -8,7 +8,7 @@ import {
 	getActiveSplitActionName,
 	isActiveSplitActionExpanded
 } from "store/routing/selectors";
-import { AppAction } from "apptype";
+import { AppAction } from "App";
 import { ReduxGlobalState } from "store/store";
 import { bindActionCreators, Dispatch } from "@reduxjs/toolkit";
 import React from "react";

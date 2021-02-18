@@ -15,7 +15,7 @@ import {
 import { bindActionCreators, Dispatch } from "@reduxjs/toolkit";
 import { BRANCH_LIMIT } from "data/limit";
 import { benchStart, benchEnd } from "util/benchmark";
-import { AppAction } from "apptype";
+import { AppAction } from "App";
 import { ReduxGlobalState } from "store/store";
 
 type ExternalProps = {
@@ -40,9 +40,9 @@ const connector = connect(mapStateToProps, mapDispatchToProps);
 type Props = ConnectedProps<typeof connector> & ExternalProps;
 
 export const BranchList: React.FunctionComponent<Props> = ({ length, actions, appActions }: Props) => {
-	if (length === 0) {
-		return null;
-	}
+	// if (length === 0) {
+	// 	return null;
+	// }
 	const branchNodes = [];
 	for (let i = 0; i < length; i++) {
 		branchNodes.push(<Branch
@@ -82,4 +82,4 @@ export const BranchList: React.FunctionComponent<Props> = ({ length, actions, ap
 	);
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(BranchList);
+export default connector(BranchList);

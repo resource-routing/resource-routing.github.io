@@ -5,7 +5,7 @@ export const {
 	doLayout,
 	setHeaderCollapsed,
 	setSideCollapsed,
-	setActionsCollapsed,
+	setResourcesCollapsed,
 	setEditingNav,
 	setEditingActions,
 	setEditingItems,
@@ -16,4 +16,5 @@ export const {
 	markResourceDirtyAt,
 	markResourceDirtyAtSplit,
 	setShowOnlyChangedResources,
+	setShowingHelp,
 } = actions;

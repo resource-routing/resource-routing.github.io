@@ -1,7 +1,7 @@
 import { ActionDelta } from "./delta";
 import store, { ReduxGlobalState } from "store/store";
 import { getActionResourceByGlobalIndex, getResourceCalcError, getResourceCalcProgress } from "store/application/selectors";
-import { getActionDeltaError, getActionDeltas, getActionIndexFromGlobal, getBranchName, getGlobalActionIndex, getSplitName, getTotalActionCount } from "store/routing/selectors";
+import { getActionDeltaError, getActionDeltas, getActionIndexFromGlobal, getActionName, getBranchName, getGlobalActionIndex, getSplitName, getTotalActionCount } from "store/routing/selectors";
 import { markResourceDirtyAt, setResourceContent, setResourceError } from "store/application/actions";
 
 export type RouteResources = {
@@ -43,7 +43,7 @@ function update() {
 	const state = store.getState();
 	const currentlyNeedToUpdate = getResourceCalcProgress(state);
 	const total = getTotalActionCount(state);
-	if (currentlyNeedToUpdate < total) {
+	if (total !== 0 && currentlyNeedToUpdate < total) {
 		updateAt(state, currentlyNeedToUpdate);
 	}
 }
@@ -77,11 +77,12 @@ function updateAt(state: ReduxGlobalState, currentlyNeedToUpdate: number) {
 	if (deltaError !== null || deltas === null) {
 		const branchName = getBranchName(state, branch);
 		const splitName = getSplitName(state, branch, split);
+		const actionName = getActionName(state, branch, split, action);
 		const resourceError: ResourceError = {
 			branch,
 			split,
 			action,
-			message: `Error in branch "${branchName}", split "${splitName}", action ${action}`,
+			message: `Error in branch "${branchName}", split "${splitName}", action "${actionName}"`,
 		};
 		store.dispatch(setResourceError({ error: resourceError }));
 		store.dispatch(setResourceContent({ globalIndex: currentlyNeedToUpdate, content: {} }));

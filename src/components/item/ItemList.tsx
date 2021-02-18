@@ -1,6 +1,6 @@
 import ItemEdit from "./ItemEdit";
 import ItemDisplay from "./ItemDisplay";
-import { AppAction } from "apptype";
+import { AppAction } from "App";
 import {
 	getActiveGlobalIndex,
 	getFilteredItemIndices,

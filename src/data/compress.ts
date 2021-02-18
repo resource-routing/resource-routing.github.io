@@ -7,14 +7,6 @@ import zlib from "zlib";
 type LengthPrependedString = string;
 type CompressedStateString = string;
 
-export function stateToJson(state: RouteState): string {
-	return JSON.stringify(deflateRouteState(state));
-}
-
-export function jsonToState(str: string): RouteState {
-	return inflateRouteData(JSON.parse(str) as RouteData);
-}
-
 export function compressState(state: RouteState): CompressedStateString {
 	const { projectName, branches, items } = deflateRouteState(state);
 	const projectNameEncoded = encodeLengthPrepended(projectName);
@@ -68,8 +60,8 @@ export function decodeLengthPrepended(lengthPrependedString: LengthPrependedStri
 	if (i < currentIndex) {
 		return ["null", -1, "Fail to decode: length not found"];
 	}
-	if (i == currentIndex) {
-		return ["", i + 1, "null"];
+	if (i === currentIndex) {
+		return ["", i + 1, null];
 	}
 	const len = Number(lengthPrependedString.substring(currentIndex, i));
 	if (!Number.isInteger(len)) {

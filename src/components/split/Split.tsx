@@ -25,12 +25,13 @@ import {
 	setSplitClipboard,
 	setEditingActions,
 	markResourceDirtyAtSplit,
+	setShowingHelp,
 } from "store/application/actions";
 import { getSplitClipboard } from "store/application/selectors";
 import { bindActionCreators, Dispatch } from "@reduxjs/toolkit";
 import { benchStart, benchEnd } from "util/benchmark";
 import { SPLIT_LIMIT } from "data/limit";
-import { AppAction } from "apptype";
+import { AppAction } from "App";
 import { RouteSplit } from "data/split";
 import { ReduxGlobalState } from "store/store";
 
@@ -64,6 +65,7 @@ const mapDispatchToProps = (dispatch: Dispatch) => ({
 		setActiveBranchAndSplit,
 		setEditingActions,
 		markResourceDirtyAtSplit,
+		setShowingHelp,
 	}, dispatch)
 });
 
@@ -218,6 +220,7 @@ export const Split: React.FunctionComponent<Props> = ({
 							activeSplit: splitIndex,
 						});
 						actions.setEditingActions({ editing: false });
+						actions.setShowingHelp({ showHelp: false });
 					}}>{displayName}</u>
 				</td>
 			</tr>;

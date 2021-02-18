@@ -21,7 +21,7 @@ import {
 } from "store/application/actions";
 import { bindActionCreators, Dispatch } from "@reduxjs/toolkit";
 import { benchEnd, benchStart } from "util/benchmark";
-import { AppAction } from "apptype";
+import { AppAction } from "App";
 import { ReduxGlobalState } from "store/store";
 import { BRANCH_LIMIT } from "data/limit";
 

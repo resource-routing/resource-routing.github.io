@@ -2,11 +2,10 @@ import { PayloadAction } from "@reduxjs/toolkit";
 import layout, { LayoutOption } from "util/layout";
 import { ReduxGlobalState } from "store/store";
 import {
-	isResourcesSectionHidden,
 	isSideSectionShrunk,
 	isHeaderCollapsed,
 	isSideSectionCollapsed,
-	isActionSectionCollapsed,
+	isResourcesSectionCollapsed,
 	getResourceCalcProgress,
 	getResourceCalcError
 } from "./selectors";
@@ -17,10 +16,9 @@ import { ActionResource, ResourceError } from "data/resource";
 function layoutOption(state: ReduxGlobalState): LayoutOption {
 	return {
 		sideCollapsed: isSideSectionCollapsed(state),
-		actionsCollapsed: isActionSectionCollapsed(state),
+		resourcesCollapsed: isResourcesSectionCollapsed(state),
 		headerCollapsed: isHeaderCollapsed(state),
 		shrink: isSideSectionShrunk(state),
-		noResources: isResourcesSectionHidden(state)
 	};
 }
 
@@ -40,26 +38,26 @@ function markResourceDirty(state: ReduxGlobalState, globalIndex: number): void {
 	}
 }
 
-const SHRINK_SIDE_WHEN_LESS_THAN = 1550;
-const HIDE_RESOURCES_WHEN_LESS_THAN = 700;
+const SHRINK_SIDE_WHEN_LESS_THAN = 1000;
+
 export default {
 	setWindowWidth(state: ReduxGlobalState, action: PayloadAction<{ width: number }>): void {
 
 		const shrink = action.payload.width < SHRINK_SIDE_WHEN_LESS_THAN;
-		const noResources = action.payload.width < HIDE_RESOURCES_WHEN_LESS_THAN;
-		const shouldUpdate = isSideSectionShrunk(state) !== shrink || isResourcesSectionHidden(state) !== noResources;
+		// const noResources = action.payload.width < HIDE_RESOURCES_WHEN_LESS_THAN;
+		const shouldUpdate = isSideSectionShrunk(state) !== shrink;
 		if (shouldUpdate) {
-			state.applicationState.layout = layout({ ...layoutOption(state), shrink, noResources });
+			state.applicationState.layout = layout({ ...layoutOption(state), shrink });
 			state.applicationState.shrinkSide = shrink;
-			state.applicationState.noResources = noResources;
+			//state.applicationState.noResources = noResources;
 		}
 	},
 	doLayout(state: ReduxGlobalState): void {
 		const shrink = window.innerWidth < SHRINK_SIDE_WHEN_LESS_THAN;
-		const noResources = window.innerWidth < HIDE_RESOURCES_WHEN_LESS_THAN;
-		state.applicationState.layout = layout({ ...layoutOption(state), shrink, noResources });
+		// const noResources = window.innerWidth < HIDE_RESOURCES_WHEN_LESS_THAN;
+		state.applicationState.layout = layout({ ...layoutOption(state), shrink });
 		state.applicationState.shrinkSide = shrink;
-		state.applicationState.noResources = noResources;
+		//state.applicationState.noResources = noResources;
 	},
 	setHeaderCollapsed(state: ReduxGlobalState, action: PayloadAction<{ collapsed: boolean }>): void {
 		const headerCollapsed = action.payload.collapsed;
@@ -75,11 +73,11 @@ export default {
 			state.applicationState.layout = layout({ ...layoutOption(state), sideCollapsed });
 		}
 	},
-	setActionsCollapsed(state: ReduxGlobalState, action: PayloadAction<{ collapsed: boolean }>): void {
-		const actionsCollapsed = action.payload.collapsed;
-		if (actionsCollapsed !== isActionSectionCollapsed(state)) {
-			state.applicationState.actionsCollapsed = actionsCollapsed;
-			state.applicationState.layout = layout({ ...layoutOption(state), actionsCollapsed });
+	setResourcesCollapsed(state: ReduxGlobalState, action: PayloadAction<{ collapsed: boolean }>): void {
+		const resourcesCollapsed = action.payload.collapsed;
+		if (resourcesCollapsed !== isResourcesSectionCollapsed(state)) {
+			state.applicationState.resourcesCollapsed = resourcesCollapsed;
+			state.applicationState.layout = layout({ ...layoutOption(state), resourcesCollapsed });
 		}
 	},
 	setEditingNav(state: ReduxGlobalState, action: PayloadAction<{ editing: boolean }>): void {
@@ -119,5 +117,8 @@ export default {
 	},
 	setShowOnlyChangedResources(state: ReduxGlobalState, action: PayloadAction<{ showOnlyChangedResources: boolean }>): void {
 		state.applicationState.showOnlyChangedResources = action.payload.showOnlyChangedResources;
+	},
+	setShowingHelp(state: ReduxGlobalState, action: PayloadAction<{ showHelp: boolean }>): void {
+		state.applicationState.showHelp = action.payload.showHelp;
 	}
 };

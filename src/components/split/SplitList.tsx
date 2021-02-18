@@ -19,7 +19,7 @@ import { bindActionCreators, Dispatch } from "@reduxjs/toolkit";
 import { benchEnd, benchStart } from "util/benchmark";
 import { SPLIT_LIMIT } from "data/limit";
 import { RouteSplit } from "data/split";
-import { AppAction } from "apptype";
+import { AppAction } from "App";
 import { ReduxGlobalState } from "store/store";
 
 type ExternalProps = {

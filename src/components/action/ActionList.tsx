@@ -1,5 +1,5 @@
 import { bindActionCreators, Dispatch } from "@reduxjs/toolkit";
-import { AppAction } from "apptype";
+import { AppAction } from "App";
 import { connect, ConnectedProps } from "react-redux";
 import {
 	getActiveSplit,

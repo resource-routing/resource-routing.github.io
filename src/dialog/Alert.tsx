@@ -2,13 +2,10 @@ import Box from "components/Box";
 
 import { calc } from "util/layout";
 import { ReactNode } from "react";
-
+import { AlertOption } from "App";
 type Props = {
 	content: ReactNode | undefined,
-	alertActions: {
-		name: string,
-		execute?: () => void
-	}[],
+	alertActions: AlertOption[],
 	actions: {
 		hideAlert: () => void
 	}
@@ -19,7 +16,7 @@ const Alert: React.FunctionComponent<Props> = ({ content, alertActions, actions 
 		return null;
 	}
 	const width = "50%";
-	const height = "12rem";
+	const height = "15rem";
 	return (
 		<div>
 			<div

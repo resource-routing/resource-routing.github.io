@@ -13,16 +13,12 @@ export function getInfo(state: ReduxGlobalState): string {
 	return getApplicationState(state).info;
 }
 
-export function isResourcesSectionHidden(state: ReduxGlobalState): boolean {
-	return getApplicationState(state).noResources;
-}
-
 export function isSideSectionShrunk(state: ReduxGlobalState): boolean {
 	return getApplicationState(state).shrinkSide;
 }
 
-export function isActionSectionCollapsed(state: ReduxGlobalState): boolean {
-	return getApplicationState(state).actionsCollapsed;
+export function isResourcesSectionCollapsed(state: ReduxGlobalState): boolean {
+	return getApplicationState(state).resourcesCollapsed;
 }
 
 export function isHeaderCollapsed(state: ReduxGlobalState): boolean {
@@ -67,10 +63,6 @@ export function getActionsMainBounds(state: ReduxGlobalState): Bounds {
 
 export function getFooterBounds(state: ReduxGlobalState): Bounds {
 	return getLayout(state).footer;
-}
-
-export function getMapBounds(state: ReduxGlobalState): Bounds {
-	return getLayout(state).map;
 }
 
 export function getResourcesBounds(state: ReduxGlobalState): Bounds {
@@ -123,4 +115,8 @@ export function getActionResource(state: ReduxGlobalState, branchIndex: number, 
 
 export function isOnlyShowingChangedResources(state: ReduxGlobalState): boolean {
 	return getApplicationState(state).showOnlyChangedResources;
+}
+
+export function isShowingHelp(state: ReduxGlobalState): boolean {
+	return getApplicationState(state).showHelp;
 }

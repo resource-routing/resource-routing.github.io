@@ -90,3 +90,11 @@ iframe{
   background-color: rgb(255, 121, 121);
 }
 
+p{
+  margin: 0.5rem;
+}
+
+.help-doc {
+  padding: 0.5rem;
+}
+

@@ -13,7 +13,7 @@ import {
 	setEditingNav
 } from "store/application/actions";
 import { bindActionCreators, Dispatch } from "@reduxjs/toolkit";
-import { AppAction } from "apptype";
+import { AppAction } from "App";
 import { ReduxGlobalState } from "store/store";
 
 type ExternalProps = {

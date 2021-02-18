@@ -1,6 +1,7 @@
 import { actions } from "store/store";
 
 export const {
+	setRouteState,
 	setActiveBranchAndSplit,
 	setActiveAction,
 	createBranch,
@@ -13,7 +14,6 @@ export const {
 	createSplit,
 	setSplitName,
 	setSplitExpanded,
-	setSplitCoords,
 	deleteSplit,
 	swapSplits,
 	moveFirstSplitToPreviousBranch,
@@ -29,4 +29,5 @@ export const {
 	deleteAction,
 	swapActions,
 	setActionDeltaString,
+	setProjectName,
 } = actions;

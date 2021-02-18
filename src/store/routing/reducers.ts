@@ -17,6 +17,7 @@ import {
 	getItemCount,
 	getSplitCount
 } from "./selectors";
+import { RouteState } from "./type";
 
 function validateBranch(state: ReduxGlobalState, branchIndex: number): boolean {
 	const branchLength = getBranchCount(state);
@@ -42,6 +43,12 @@ function validateAction(state: ReduxGlobalState, branchIndex: number, splitIndex
 }
 
 export default {
+	setRouteState(state: ReduxGlobalState, action: PayloadAction<{ routeState: RouteState }>): void {
+		state.routeState = action.payload.routeState;
+	},
+	setProjectName(state: ReduxGlobalState, action: PayloadAction<{ projectName: string }>): void {
+		state.routeState.projectName = action.payload.projectName;
+	},
 	setActiveBranchAndSplit(state: ReduxGlobalState, action: PayloadAction<{ activeBranch: number, activeSplit: number }>): void {
 		state.routeState.activeBranch = action.payload.activeBranch;
 		state.routeState.activeSplit = action.payload.activeSplit;
@@ -170,12 +177,6 @@ export default {
 	setSplitExpanded(state: ReduxGlobalState, action: PayloadAction<{ branchIndex: number, splitIndex: number, expanded: boolean }>): void {
 		const { branchIndex, splitIndex, expanded } = action.payload;
 		state.routeState.branches[branchIndex].splits[splitIndex].expanded = expanded;
-	},
-	setSplitCoords(state: ReduxGlobalState, action: PayloadAction<{ branchIndex: number, splitIndex: number, x: number, y: number, z: number }>): void {
-		const { branchIndex, splitIndex, x, y, z } = action.payload;
-		state.routeState.branches[branchIndex].splits[splitIndex].mapX = x;
-		state.routeState.branches[branchIndex].splits[splitIndex].mapY = y;
-		state.routeState.branches[branchIndex].splits[splitIndex].mapZ = z;
 	},
 	deleteSplit(state: ReduxGlobalState, action: PayloadAction<{ branchIndex: number, splitIndex: number }>): void {
 		const { branchIndex, splitIndex } = action.payload;

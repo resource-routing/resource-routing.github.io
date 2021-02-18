@@ -18,7 +18,7 @@ import {
 } from "store/application/actions";
 import { ReduxGlobalState } from "store/store";
 import { connect, ConnectedProps } from "react-redux";
-import { AppAction } from "apptype";
+import { AppAction } from "App";
 import { benchEnd, benchStart } from "util/benchmark";
 import { ITEM_LIMIT } from "data/limit";
 import { useState } from "react";
