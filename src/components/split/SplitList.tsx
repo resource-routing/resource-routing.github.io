@@ -14,6 +14,7 @@ import {
 import {
 	setInfo,
 	markResourceDirtyAtSplit,
+	setEditingNav,
 } from "store/application/actions";
 import { bindActionCreators, Dispatch } from "@reduxjs/toolkit";
 import { benchEnd, benchStart } from "util/benchmark";
@@ -42,6 +43,7 @@ const mapDispatchToProps = (dispatch: Dispatch) => ({
 		setInfo,
 		mergeNextIntoBranch,
 		markResourceDirtyAtSplit,
+		setEditingNav,
 	}, dispatch)
 });
 
@@ -77,6 +79,7 @@ export const SplitList: React.FunctionComponent<Props> = ({
 				branchIndex: branchIndex,
 				splitIndex: length,
 			});
+			actions.setEditingNav({ editing: true });
 			actions.setInfo({ info: `Split created. (${benchEnd(startTime)} ms)` });
 		}
 	};

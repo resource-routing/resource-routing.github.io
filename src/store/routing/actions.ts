@@ -30,4 +30,6 @@ export const {
 	swapActions,
 	setActionDeltaString,
 	setProjectName,
+	reparseAllDeltaStrings,
+	changeActiveSplit,
 } = actions;

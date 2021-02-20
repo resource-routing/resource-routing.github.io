@@ -161,6 +161,10 @@ export function getActionDeltaError(state: ReduxGlobalState, branchIndex: number
 	return getAction(state, branchIndex, splitIndex, actionIndex).deltaError;
 }
 
+export function getActionDeltaString(state: ReduxGlobalState, branchIndex: number, splitIndex: number, actionIndex: number): string {
+	return getAction(state, branchIndex, splitIndex, actionIndex).deltaString;
+}
+
 export function getGlobalActionIndex(state: ReduxGlobalState, branchIndex: number, splitIndex: number, actionIndex: number): number {
 	let i = 0;
 	for (let b = 0; b < branchIndex; b++) {

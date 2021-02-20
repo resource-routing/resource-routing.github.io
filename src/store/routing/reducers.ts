@@ -9,6 +9,7 @@ import { ReduxGlobalState } from "store/store";
 import {
 	getActionCount,
 	getActionDeltas,
+	getActionDeltaString,
 	getActiveAction,
 	getActiveBranch,
 	getActiveSplit,
@@ -40,6 +41,28 @@ function validateAction(state: ReduxGlobalState, branchIndex: number, splitIndex
 		return false;
 	}
 	return actionIndex >= 0 && actionIndex < getActionCount(state, branchIndex, splitIndex);
+}
+
+function parseDeltaString(state: ReduxGlobalState, deltaString: string, branchIndex: number, splitIndex: number, actionIndex: number): void {
+	const [delta, error] = stringToDelta(deltaString);
+	if (error) {
+		state.routeState.branches[branchIndex].splits[splitIndex].actions[actionIndex].deltaError = error;
+		state.routeState.branches[branchIndex].splits[splitIndex].actions[actionIndex].deltas = null;
+	} else {
+		if (delta !== null) {
+			const names = Object.keys(delta);
+			const invalidNames = getInvalidItemNamesIn(state, names);
+			if (invalidNames.length > 0) {
+				const message = `Undefined item(s): ${invalidNames.join(", ")}`;
+				state.routeState.branches[branchIndex].splits[splitIndex].actions[actionIndex].deltaError = message;
+				state.routeState.branches[branchIndex].splits[splitIndex].actions[actionIndex].deltas = null;
+				return;
+			}
+		}
+
+		state.routeState.branches[branchIndex].splits[splitIndex].actions[actionIndex].deltaError = null;
+		state.routeState.branches[branchIndex].splits[splitIndex].actions[actionIndex].deltas = delta;
+	}
 }
 
 export default {
@@ -391,25 +414,8 @@ export default {
 		state.routeState.branches[branchIndex].splits[splitIndex].actions[actionIndex].expanded = true;
 
 		state.routeState.branches[branchIndex].splits[splitIndex].actions[actionIndex].deltaString = deltaString;
-		const [delta, error] = stringToDelta(deltaString);
-		if (error) {
-			state.routeState.branches[branchIndex].splits[splitIndex].actions[actionIndex].deltaError = error;
-			state.routeState.branches[branchIndex].splits[splitIndex].actions[actionIndex].deltas = null;
-		} else {
-			if (delta !== null) {
-				const names = Object.keys(delta);
-				const invalidNames = getInvalidItemNamesIn(state, names);
-				if (invalidNames.length > 0) {
-					const message = `Undefined item(s): ${invalidNames.join(", ")}`;
-					state.routeState.branches[branchIndex].splits[splitIndex].actions[actionIndex].deltaError = message;
-					state.routeState.branches[branchIndex].splits[splitIndex].actions[actionIndex].deltas = null;
-					return;
-				}
-			}
+		parseDeltaString(state, deltaString, branchIndex, splitIndex, actionIndex);
 
-			state.routeState.branches[branchIndex].splits[splitIndex].actions[actionIndex].deltaError = null;
-			state.routeState.branches[branchIndex].splits[splitIndex].actions[actionIndex].deltas = delta;
-		}
 	},
 	deleteAction(state: ReduxGlobalState, action: PayloadAction<{ branchIndex?: number, splitIndex?: number, actionIndex: number }>): void {
 		let { branchIndex, splitIndex } = action.payload;
@@ -453,4 +459,42 @@ export default {
 			}
 		}
 	},
+	reparseAllDeltaStrings(state: ReduxGlobalState): void {
+		for (let b = 0; b < getBranchCount(state); b++) {
+			for (let s = 0; s < getSplitCount(state, b); s++) {
+				for (let a = 0; a < getActionCount(state, b, s); a++) {
+					parseDeltaString(state, getActionDeltaString(state, b, s, a), b, s, a);
+				}
+			}
+		}
+	},
+	changeActiveSplit(state: ReduxGlobalState, action: PayloadAction<{ changeBy: number }>): void {
+		const activeBranch = getActiveBranch(state);
+		const activeSplit = getActiveSplit(state);
+		if (activeBranch < 0 || activeSplit < 0) {
+			return;
+		}
+		let current = 0;
+		for (let b = 0; b < activeBranch; b++) {
+			current += getSplitCount(state, b);
+		}
+		current += activeSplit;
+		let changed = current + action.payload.changeBy;
+		let changedBranch = -1;
+		let changedSplit = -1;
+		for (let b = 0; b < getBranchCount(state); b++) {
+			const splitCount = getSplitCount(state, b);
+			if (changed < splitCount) {
+				changedBranch = b;
+				changedSplit = changed;
+				break;
+			} else {
+				changed -= splitCount;
+			}
+		}
+
+		state.routeState.activeBranch = changedBranch;
+		state.routeState.activeSplit = changedSplit;
+		state.routeState.activeAction = -1;
+	}
 };

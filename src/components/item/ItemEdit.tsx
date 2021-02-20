@@ -12,9 +12,11 @@ import {
 	setItemColor,
 	deleteItem,
 	swapItems,
+	reparseAllDeltaStrings,
 } from "store/routing/actions";
 import {
 	setInfo,
+	markResourceDirtyAt,
 } from "store/application/actions";
 import { ReduxGlobalState } from "store/store";
 import { connect, ConnectedProps } from "react-redux";
@@ -48,6 +50,8 @@ const mapDispatchToProps = (dispatch: Dispatch) => ({
 		setInfo,
 		deleteItem,
 		swapItems,
+		markResourceDirtyAt,
+		reparseAllDeltaStrings,
 	}, dispatch)
 });
 
@@ -94,6 +98,8 @@ const ItemEdit: React.FunctionComponent<Props> = ({ name, color, foreground, bac
 							execute: () => {
 								const startTime = benchStart();
 								actions.deleteItem({ index });
+								actions.reparseAllDeltaStrings();
+								actions.markResourceDirtyAt({ globalIndex: 0 });
 								actions.setInfo({ info: `Item deleted. (${benchEnd(startTime)} ms)` });
 							}
 						}]
@@ -127,6 +133,9 @@ const ItemEdit: React.FunctionComponent<Props> = ({ name, color, foreground, bac
 				<button disabled={!renamed || renamed === name} className="icon-button" title="Apply rename" onClick={() => {
 					const startTime = benchStart();
 					actions.setItemName({ index, name: renamed });
+					actions.reparseAllDeltaStrings();
+					actions.markResourceDirtyAt({ globalIndex: 0 });
+
 					setRenamed("");
 					actions.setInfo({ info: `Item renamed. (${benchEnd(startTime)} ms)` });
 				}}>R</button>

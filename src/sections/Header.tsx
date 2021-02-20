@@ -16,18 +16,22 @@ import {
 	setHeaderCollapsed,
 	setInfo,
 	setShowingHelp,
+	setEditingActions,
+	setEditingItems,
+	setEditingNav,
 } from "store/application/actions";
 import {
 	setAutoSaveEnabled
 } from "store/setting/actions";
 import {
 	setProjectName,
+	setRouteState,
 } from "store/routing/actions";
 import { bindActionCreators, Dispatch } from "@reduxjs/toolkit";
 import { AppAction } from "App";
 import { ReduxGlobalState } from "store/store";
 import { benchEnd, benchStart } from "util/benchmark";
-import { saveSettings, storeToLocalStorage } from "data/storage";
+import { newEmptyRouteState, saveSettings, storeToLocalStorage } from "data/storage";
 
 type ExternalProps = {
 	appActions: AppAction,
@@ -50,6 +54,10 @@ const mapDispatchToProps = (dispatch: Dispatch) => ({
 		setAutoSaveEnabled,
 		setProjectName,
 		setShowingHelp,
+		setEditingActions,
+		setEditingItems,
+		setEditingNav,
+		setRouteState,
 	}, dispatch)
 });
 
@@ -66,6 +74,9 @@ export const Header: React.FunctionComponent<Props> = ({
 	const saveButton = <button className="vertical-center space-left-small" onClick={() => {
 		const start = benchStart();
 		storeToLocalStorage(routeState, settingState);
+		actions.setEditingActions({ editing: false });
+		actions.setEditingItems({ editing: false });
+		actions.setEditingNav({ editing: false });
 		actions.setInfo({ info: `Project saved to local storage. (${benchEnd(start)} ms)` });
 	}}>Save</button>;
 
@@ -86,7 +97,21 @@ export const Header: React.FunctionComponent<Props> = ({
 			}}>{autoSaveEnabled ? "Auto Save: Enabled" : "Auto Save: Disabled"}</button>
 			<button className="vertical-center space-left-small" disabled>Force Update Resources</button>
 
-			<button className="vertical-center space-left-small" disabled>Reset</button>
+			<button className="vertical-center space-left-small" onClick={() => {
+				appActions.showAlert("Do you really want to delete everything? This is not reversible!!!", [
+					{
+						name: "Cancel"
+					}, {
+						name: "Reset",
+						execute: () => {
+							const start = benchStart();
+							const state = newEmptyRouteState();
+							actions.setRouteState({ routeState: state });
+							actions.setInfo({ info: `Reset completed. (${benchEnd(start)} ms)` });
+						}
+					}
+				]);
+			}}>Reset</button>
 		</span>;
 
 	const allButtons =

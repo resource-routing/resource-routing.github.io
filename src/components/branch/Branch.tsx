@@ -65,7 +65,7 @@ export const Branch: React.FunctionComponent<Props> = ({ index, name, expanded, 
 			}} />
 		</td>;
 	let branchNode;
-	if (editing) {
+	if (editing && !expanded) {
 		branchNode =
 			<tr>
 				{expandButtonCell}
@@ -151,7 +151,7 @@ export const Branch: React.FunctionComponent<Props> = ({ index, name, expanded, 
 			<tr>
 				{expandButtonCell}
 				<td colSpan={10}>
-					<strong>{displayName}</strong>
+					<strong>{displayName}</strong> {editing && <em>collapse to edit</em>}
 				</td>
 			</tr>;
 	}

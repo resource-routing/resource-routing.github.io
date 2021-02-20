@@ -164,9 +164,13 @@ export const ActionItem: React.FunctionComponent<Props> = ({
 		actionNode =
 			<tr>
 				{expandButton}
-				<td colSpan={6}><span>{deltaString ? <u className="split-link" onClick={() => {
-					actions.setActiveAction({ activeAction: index });
-				}}>{displayName}</u> : <em>{displayName}</em>}</span></td>
+				<td colSpan={6}>
+					<span>{deltaString ? <u className="split-link" onClick={() => {
+						actions.setActiveAction({ activeAction: index });
+					}}>{displayName}</u> : <em>{displayName}</em>}
+					</span>
+					{!deltaString && <div className="action-note-spacer" />}
+				</td>
 			</tr>;
 	}
 

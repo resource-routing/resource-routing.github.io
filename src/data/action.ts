@@ -47,7 +47,7 @@ export function inflateActionData(action: ActionData): RouteAction {
 	const routeAction = {
 		name: action.name || "",
 		deltaString: action.deltaString || "",
-		expanded: false,
+		expanded: true,
 		deltas,
 		deltaError,
 	};

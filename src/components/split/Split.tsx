@@ -24,6 +24,7 @@ import {
 	setInfo,
 	setSplitClipboard,
 	setEditingActions,
+	setEditingNav,
 	markResourceDirtyAtSplit,
 	setShowingHelp,
 } from "store/application/actions";
@@ -66,6 +67,7 @@ const mapDispatchToProps = (dispatch: Dispatch) => ({
 		setEditingActions,
 		markResourceDirtyAtSplit,
 		setShowingHelp,
+		setEditingNav,
 	}, dispatch)
 });
 
@@ -102,6 +104,7 @@ export const Split: React.FunctionComponent<Props> = ({
 				branchIndex: branchIndex,
 				splitIndex: splitIndex,
 			});
+			actions.setEditingNav({ editing: true });
 			actions.setInfo({ info: `Split created. (${benchEnd(startTime)} ms)` });
 		}
 	};
@@ -116,8 +119,7 @@ export const Split: React.FunctionComponent<Props> = ({
 						actions.setInfo({ info: `Branch broken. (${benchEnd(startTime)} ms)` });
 					}}>{"/"}</button>
 				</td>
-				{expandButtonCell}
-				<td colSpan={3}>
+				<td colSpan={4}>
 					<input
 						className="full-width"
 						placeholder="Split Name"
@@ -225,7 +227,7 @@ export const Split: React.FunctionComponent<Props> = ({
 				</td>
 			</tr>;
 	}
-	if (!expanded) {
+	if (!expanded || editing) {
 		return splitNode;
 	}
 

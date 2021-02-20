@@ -28,7 +28,7 @@ export function deflateRouteBranch(branch: RouteBranch): BranchData {
 export function inflateBranchData(branch: BranchData): RouteBranch {
 	return {
 		name: branch.name || "",
-		expanded: false,
+		expanded: true,
 		splits: (branch.splits || []).map(inflateSplitData),
 	};
 }

@@ -32,6 +32,17 @@ export function inflateRouteData(data: RouteData): RouteState {
 	};
 }
 
+export function newEmptyRouteState(): RouteState {
+	return {
+		projectName: "Unnamed Project",
+		activeBranch: -1,
+		activeSplit: -1,
+		activeAction: -1,
+		branches: [],
+		items: [],
+	};
+}
+
 export function exportAsCompressed(state: RouteState): string {
 	return compressState(state);
 }

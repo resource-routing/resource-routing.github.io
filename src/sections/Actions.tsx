@@ -16,6 +16,9 @@ import {
 import {
 	setEditingActions
 } from "store/application/actions";
+import {
+	changeActiveSplit,
+} from "store/routing/actions";
 
 type ExternalProps = {
 	appActions: AppAction
@@ -32,6 +35,7 @@ const mapStateToProps = (state: ReduxGlobalState) => {
 const mapDispatchToProps = (dispatch: Dispatch) => ({
 	actions: bindActionCreators({
 		setEditingActions,
+		changeActiveSplit,
 	}, dispatch)
 });
 
@@ -50,8 +54,12 @@ export const Actions: React.FunctionComponent<Props> = ({
 			}}>
 				{editing ? "Finish" : "Edit"}
 			</button>
-			<button className="space-left-small" disabled>Previous Split</button>
-			<button className="space-left-small" disabled>Next Split</button>
+			<button className="space-left-small" onClick={() => {
+				actions.changeActiveSplit({ changeBy: -1 });
+			}}>Previous Split</button>
+			<button className="space-left-small" onClick={() => {
+				actions.changeActiveSplit({ changeBy: 1 });
+			}}>Next Split</button>
 		</span>;
 
 	return (
