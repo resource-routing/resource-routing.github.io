@@ -1,5 +1,3 @@
-
-import Box from "components/Box";
 import ActionList from "components/action/ActionList";
 import {
 	getActiveSplitName,
@@ -9,8 +7,6 @@ import { AppAction } from "App";
 import { ReduxGlobalState } from "store/store";
 import { bindActionCreators, Dispatch } from "@reduxjs/toolkit";
 import {
-	getActionsHeaderBounds,
-	getActionsMainBounds,
 	isEditingActions
 } from "store/application/selectors";
 import {
@@ -19,14 +15,13 @@ import {
 import {
 	changeActiveSplit,
 } from "store/routing/actions";
+import { BoxLayout, SplitLayout } from "components/Layout";
 
 type ExternalProps = {
 	appActions: AppAction
 }
 const mapStateToProps = (state: ReduxGlobalState) => {
 	return {
-		actionMainBounds: getActionsMainBounds(state),
-		actionHeaderBounds: getActionsHeaderBounds(state),
 		splitName: getActiveSplitName(state),
 		editing: isEditingActions(state),
 	};
@@ -44,7 +39,7 @@ const connector = connect(mapStateToProps, mapDispatchToProps);
 type Props = ConnectedProps<typeof connector> & ExternalProps
 
 export const Actions: React.FunctionComponent<Props> = ({
-	actionMainBounds, actionHeaderBounds, editing, splitName, appActions, actions
+	editing, splitName, appActions, actions
 }: Props) => {
 
 	const buttonSection = splitName !== undefined &&
@@ -63,20 +58,15 @@ export const Actions: React.FunctionComponent<Props> = ({
 		</span>;
 
 	return (
-		<div >
-			<Box layout={actionMainBounds} borderClass="overflow-auto">
-				<div>
-					<ActionList appActions={appActions} />
-				</div>
-			</Box>
-			<Box layout={actionHeaderBounds} >
-				<div>
-					<strong> Split Detail {splitName && " - " + splitName}</strong>
-					{buttonSection}
-					<hr />
-				</div>
-			</Box>
-		</div>
+		<SplitLayout size="2rem" className="component border">
+			<BoxLayout className="component header-border">
+				<strong> Split Detail {splitName && " - " + splitName}</strong>
+				{buttonSection}
+			</BoxLayout>
+			<BoxLayout className="overflow-auto">
+				<ActionList appActions={appActions} />
+			</BoxLayout>
+		</SplitLayout>
 	);
 };
 

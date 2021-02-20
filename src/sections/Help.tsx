@@ -1,12 +1,8 @@
-import Box from "components/Box";
+import { BoxLayout } from "components/Layout";
+import React from "react";
 
 const Help: React.FunctionComponent = () =>
-	<Box layout={{
-		x: "0",
-		y: "0",
-		w: "100%",
-		h: "100%",
-	}} borderClass="overflow-auto">
+	<BoxLayout className="component border overflow-auto">
 		<div className="help-doc">
 			<h1>Resource Routing Tool</h1>
 			<p>
@@ -116,7 +112,7 @@ const Help: React.FunctionComponent = () =>
 			<h2>Other</h2>
 			<p>Source on <a href="https://github.com/resource-routing/resource-routing.github.io">Github</a></p>
 		</div>
-	</Box>
+	</BoxLayout>
 	;
 
 export default Help;

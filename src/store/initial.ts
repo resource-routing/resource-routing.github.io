@@ -1,4 +1,4 @@
-import { defaultLayout } from "util/layout";
+
 export default {
 	routeState: {
 		projectName: "Unnamed Project",
@@ -14,26 +14,6 @@ export default {
 		itemFilter: "",
 	},
 	applicationState: {
-		layout: {
-			header: defaultLayout,
-			side: {
-				...defaultLayout,
-				main: defaultLayout,
-				header: defaultLayout
-			},
-			footer: defaultLayout,
-			resources: {
-				...defaultLayout,
-				header: defaultLayout,
-				main: defaultLayout,
-			},
-			actions: {
-				...defaultLayout,
-				header: defaultLayout,
-				main: defaultLayout,
-			},
-			map: defaultLayout
-		},
 		sideCollapsed: false,
 		headerCollapsed: true,
 		resourcesCollapsed: false,

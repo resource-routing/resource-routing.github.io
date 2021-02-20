@@ -4,18 +4,13 @@ import SideNav from "sections/SideNav";
 import Header from "sections/Header";
 import Footer from "sections/Footer";
 import Actions from "sections/Actions";
-import Box from "components/Box";
 import {
-	getActionsBounds,
-	getFooterBounds,
-	getHeaderBounds,
-	getResourcesBounds,
-	getSideBounds,
+	isHeaderCollapsed,
+	isResourcesSectionCollapsed,
 	isShowingHelp,
+	isSideSectionCollapsed,
 } from "store/application/selectors";
 import {
-	setWindowWidth,
-	doLayout,
 	setInfo,
 	markResourceDirtyAt,
 } from "store/application/actions";
@@ -33,20 +28,17 @@ import { ReduxGlobalState } from "store/store";
 import { startAutoSaveClock, stopAutoSaveClock } from "data/autosave";
 import IODialog from "dialog/IODialog";
 import Help from "sections/Help";
+import { BoxLayout, SplitLayout, WindowLayout } from "components/Layout";
 
 const mapStateToProps = (state: ReduxGlobalState) => ({
-	headerBounds: getHeaderBounds(state),
-	sideBounds: getSideBounds(state),
-	actionsBounds: getActionsBounds(state),
-	footerBounds: getFooterBounds(state),
-	resourcesBounds: getResourcesBounds(state),
+	headerCollapsed: isHeaderCollapsed(state),
+	sideCollapsed: isSideSectionCollapsed(state),
+	resourceCollapsed: isResourcesSectionCollapsed(state),
 	showHelp: isShowingHelp(state),
 });
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
 	actions: bindActionCreators({
-		setWindowWidth,
-		doLayout,
 		setRouteState,
 		setInfo,
 		setSettingState,
@@ -61,6 +53,7 @@ type State = {
 	alertContent?: React.ReactNode,
 	alertActions: AlertOption[],
 	showIOAlert: boolean,
+	windowWidth: number,
 }
 
 export type AlertOption = {
@@ -79,12 +72,13 @@ class App extends React.Component<Props, State> {
 			alertContent: undefined,
 			alertActions: [],
 			showIOAlert: false,
+			windowWidth: window.innerWidth,
 		};
 	}
 
 	componentDidMount() {
-		window.addEventListener("resize", this.redoLayout.bind(this));
-		this.props.actions.doLayout();
+		window.addEventListener("resize", this.updateWindowWidth.bind(this));
+		this.updateWindowWidth();
 		const [storedState, settings] = loadfromLocalStorage();
 		if (storedState) {
 			this.props.actions.setRouteState({ routeState: storedState });
@@ -100,12 +94,12 @@ class App extends React.Component<Props, State> {
 		startAutoSaveClock();
 	}
 
-	redoLayout() {
-		this.props.actions.setWindowWidth({ width: window.innerWidth });
+	updateWindowWidth() {
+		this.setState({ windowWidth: window.innerWidth });
 	}
 
 	componentWillUnmount() {
-		window.removeEventListener("resize", this.redoLayout.bind(this));
+		window.removeEventListener("resize", this.updateWindowWidth.bind(this));
 		stopResourceCalcClock();
 		stopAutoSaveClock();
 	}
@@ -117,52 +111,79 @@ class App extends React.Component<Props, State> {
 		});
 	}
 
-	render() {
+	renderHeaderAndSide(headerCollapsed: boolean, appActions: AppAction): React.ReactNode {
+		return (
+			<SplitLayout size={headerCollapsed ? "3.5rem" : "10rem"}>
+				<BoxLayout className="component border">
+					<Header appActions={appActions} />
+				</BoxLayout>
+				<SideNav appActions={appActions} />
+			</SplitLayout>
+		);
+	}
 
+	render() {
 		const appActions: AppAction = {
 			showAlert: this.showAlert.bind(this),
 			showIODialog: (show = true) => this.setState({ showIOAlert: show }),
 		};
 
 		const {
-			headerBounds,
-			sideBounds,
-			actionsBounds,
-			footerBounds,
-			resourcesBounds,
 			showHelp,
+			headerCollapsed,
+			sideCollapsed,
+			resourceCollapsed,
 		} = this.props;
+
+		const headerAndSideSection = this.renderHeaderAndSide(headerCollapsed, appActions);
+		const mainSection = showHelp ? <Help /> : <Actions appActions={appActions} />;
+		const itemSection = <Items appActions={appActions} />;
+		let mainWindowLayout;
+		if (this.state.windowWidth < 1000) {
+			mainWindowLayout =
+				<SplitLayout base="second" size={resourceCollapsed ? "1.8rem" : "30%"} min={resourceCollapsed ? undefined : "12rem"}>
+					<SplitLayout
+						direction="horizontal"
+						size={sideCollapsed ? "2rem" : "30%"}
+						min={sideCollapsed ? "2rem" : "16rem"}
+						max={sideCollapsed ? "2rem" : "24rem"} >
+						{headerAndSideSection}
+						{mainSection}
+					</SplitLayout>
+					{itemSection}
+				</SplitLayout>;
+		} else {
+			mainWindowLayout =
+				<SplitLayout
+					direction="horizontal"
+					size={sideCollapsed ? "2rem" : "30%"}
+					min={sideCollapsed ? "2rem" : "16rem"}
+					max={sideCollapsed ? "2rem" : "24rem"} >
+					{headerAndSideSection}
+					<SplitLayout base="second" size={resourceCollapsed ? "1.8rem" : "30%"} min={resourceCollapsed ? undefined : "12rem"}>
+						{mainSection}
+						{itemSection}
+					</SplitLayout>
+				</SplitLayout>;
+		}
+
 		return (
-			<div style={{
-				width: "100vw",
-				height: "100vh"
-			}}>
-				<Box layout={headerBounds} borderClass="border overflow-hidden">
-					<Header appActions={appActions} />
-				</Box>
-				<Box layout={sideBounds} borderClass="border">
-					<SideNav appActions={appActions} />
-				</Box>
-				<Box layout={footerBounds} borderClass="border">
-					<Footer />
-				</Box>
-				<Box layout={actionsBounds} borderClass="border overflow">
-					{
-						showHelp ? <Help /> : <Actions appActions={appActions} />
-					}
-
-				</Box>
-				<Box layout={resourcesBounds} borderClass="border">
-					<Items appActions={appActions} />
-				</Box>
-
+			<>
+				<WindowLayout>
+					<SplitLayout base="second" size="1.5rem">
+						{mainWindowLayout}
+						<BoxLayout className="component border">
+							<Footer />
+						</BoxLayout>
+					</SplitLayout>
+				</WindowLayout>
 				<Alert content={this.state.alertContent} alertActions={this.state.alertActions} actions={{
 					hideAlert: () => this.showAlert()
 				}} />
 				<Alert content={this.state.showIOAlert ? <IODialog appActions={appActions} /> : undefined} alertActions={[{ name: "Close" }]} actions={{
 					hideAlert: () => this.setState({ showIOAlert: false })
 				}} />
-			</div>
+			</>
 		);
 	}
 }

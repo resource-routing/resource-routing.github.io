@@ -1,10 +1,7 @@
-import Box from "components/Box";
 import BranchList from "components/branch/BranchList";
 import ExpandButton from "components/ExpandButton";
 import { connect, ConnectedProps } from "react-redux";
 import {
-	getSideHeaderBounds,
-	getSideMainBounds,
 	isEditingNav,
 	isSideSectionCollapsed
 } from "store/application/selectors";
@@ -15,14 +12,13 @@ import {
 import { bindActionCreators, Dispatch } from "@reduxjs/toolkit";
 import { AppAction } from "App";
 import { ReduxGlobalState } from "store/store";
+import { BoxLayout, SplitLayout } from "components/Layout";
 
 type ExternalProps = {
 	appActions: AppAction,
 }
 
 const mapStateToProps = (state: ReduxGlobalState) => ({
-	sideHeaderBounds: getSideHeaderBounds(state),
-	sideMainBounds: getSideMainBounds(state),
 	sideCollapsed: isSideSectionCollapsed(state),
 	editing: isEditingNav(state),
 });
@@ -39,8 +35,6 @@ const connector = connect(mapStateToProps, mapDispatchToProps);
 type Props = ConnectedProps<typeof connector> & ExternalProps;
 
 export const SideNav: React.FunctionComponent<Props> = ({
-	sideHeaderBounds,
-	sideMainBounds,
 	sideCollapsed,
 	actions,
 	appActions,
@@ -53,22 +47,17 @@ export const SideNav: React.FunctionComponent<Props> = ({
 		</span>;
 
 	return (
-		<div>
-			<Box layout={sideMainBounds} borderClass="overflow-auto">
-				<div>
-					{!sideCollapsed && <BranchList appActions={appActions} />}
-				</div>
-			</Box>
-			<Box layout={sideHeaderBounds} >
-				<div>
-					<ExpandButton expanded={!sideCollapsed} setExpanded={(expanded) => {
-						actions.setSideCollapsed({ collapsed: !expanded });
-					}} />
-					{!sideCollapsed && buttonSection}
-				</div>
-				<hr />
-			</Box>
-		</div>
+		<SplitLayout base="first" size="2rem" className="component border overflow-hidden">
+			<BoxLayout className=" component header-border">
+				<ExpandButton expanded={!sideCollapsed} setExpanded={(expanded) => {
+					actions.setSideCollapsed({ collapsed: !expanded });
+				}} />
+				{!sideCollapsed && buttonSection}
+			</BoxLayout>
+			<BoxLayout className="overflow-auto">
+				{!sideCollapsed && <BranchList appActions={appActions} />}
+			</BoxLayout>
+		</SplitLayout>
 	);
 };
 

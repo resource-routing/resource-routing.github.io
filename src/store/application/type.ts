@@ -1,10 +1,8 @@
 import { RouteSplit } from "data/split";
-import { Layout } from "util/layout";
 import { RouteResources } from "data/resource";
 
 export type ApplicationState = {
 	info: string,
-	layout: Layout,
 	sideCollapsed: boolean,
 	headerCollapsed: boolean,
 	resourcesCollapsed: boolean,

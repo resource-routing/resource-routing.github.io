@@ -1,13 +1,10 @@
 import ItemList from "components/item/ItemList";
-import Box from "components/Box";
 import { bindActionCreators, Dispatch } from "@reduxjs/toolkit";
 import { AppAction } from "App";
 import { ReduxGlobalState } from "store/store";
 import {
 	getResourceCalcError,
 	getResourceCalcProgress,
-	getResourcesHeaderBounds,
-	getResourcesMainBounds,
 	isResourcesSectionCollapsed,
 	isEditingItems,
 	isOnlyShowingChangedResources,
@@ -27,14 +24,13 @@ import {
 } from "store/routing/selectors";
 import React from "react";
 import ExpandButton from "components/ExpandButton";
+import { BoxLayout, SplitLayout } from "components/Layout";
 
 type ExternalProps = {
 	appActions: AppAction,
 }
 
 const mapStateToProps = (state: ReduxGlobalState) => ({
-	itemMainBounds: getResourcesMainBounds(state),
-	itemHeaderBounds: getResourcesHeaderBounds(state),
 	activeActionName: getActiveActionName(state),
 	resourcesCollapsed: isResourcesSectionCollapsed(state),
 	editing: isEditingItems(state),
@@ -59,7 +55,7 @@ const connector = connect(mapStateToProps, mapDispatchToProps);
 type Props = ConnectedProps<typeof connector> & ExternalProps;
 
 const Items: React.FunctionComponent<Props> = ({
-	itemMainBounds, itemHeaderBounds, resourcesCollapsed, editing, actions, appActions, filterString, progress, total, error, onlyShowChanging, activeActionName
+	resourcesCollapsed, editing, actions, appActions, filterString, progress, total, error, onlyShowChanging, activeActionName
 }: Props) => {
 	const collapsed = resourcesCollapsed;
 	const expandButton = <ExpandButton
@@ -100,30 +96,36 @@ const Items: React.FunctionComponent<Props> = ({
 	} else {
 		resourceInfo = <span className="deltastr-error" title={error.message}>{error.message}</span>;
 	}
-	return (
-		<div >
-			<Box layout={itemMainBounds} borderClass="overflow-auto">
+	const title = <strong>Resources {activeActionName && ` - ${activeActionName}`}</strong>;
+	if (resourcesCollapsed) {
+		return (
+			<BoxLayout className="component border">
+				{expandButton}
+				{title}
 
-				<div>
-					{!collapsed && <ItemList appActions={appActions} />}
-				</div>
+			</BoxLayout>
+		);
+	} else {
+		return (
+			<SplitLayout size="3.2rem" className="component border">
+				<BoxLayout className="component header-border overflow-hidden">
+					<div>
+						{expandButton}
+						{title}
 
-			</Box>
-			<Box layout={itemHeaderBounds} borderClass="overflow-hidden">
-				<div>
-					{expandButton}
-					<strong>Resources {activeActionName && ` - ${activeActionName}`}</strong>
-					{!collapsed && buttonSection}
-
-				</div>
-				{!collapsed &&
+						{buttonSection}
+					</div>
 					<div>
 						{resourceInfo}
-					</div>}
-				{!resourcesCollapsed && <hr />}
-			</Box>
-		</div>
-	);
+					</div>
+				</BoxLayout>
+				<BoxLayout className="overflow-auto">
+					<ItemList appActions={appActions} />
+				</BoxLayout>
+			</SplitLayout>
+		);
+	}
+
 };
 
 export default connector(Items);

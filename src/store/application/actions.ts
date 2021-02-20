@@ -1,8 +1,6 @@
 import { actions } from "store/store";
 
 export const {
-	setWindowWidth,
-	doLayout,
 	setHeaderCollapsed,
 	setSideCollapsed,
 	setResourcesCollapsed,

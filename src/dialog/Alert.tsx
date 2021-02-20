@@ -1,8 +1,6 @@
-import Box from "components/Box";
-
-import { calc } from "util/layout";
 import { ReactNode } from "react";
 import { AlertOption } from "App";
+import { CenterLayout, WindowLayout } from "components/Layout";
 type Props = {
 	content: ReactNode | undefined,
 	alertActions: AlertOption[],
@@ -15,27 +13,13 @@ const Alert: React.FunctionComponent<Props> = ({ content, alertActions, actions 
 	if (content === undefined) {
 		return null;
 	}
-	const width = "50%";
-	const height = "15rem";
+
 	return (
-		<div>
-			<div
-				style={{
-					backgroundColor: "rgba(0,0,0,0.6)",
-					position: "absolute",
-					top: 0,
-					left: 0,
-					width: "100vw",
-					height: "100vh"
-				}}
-			/>
-			<Box layout={{
-				x: calc(calc("100vw", "-", width), "/", "2"),
-				y: calc(calc("100vh", "-", height), "/", "2"),
-				w: width,
-				h: height,
-			}}>
-				<div style={{ backgroundColor: "white", height: "100%", boxSizing: "border-box", padding: "1rem" }}>
+		<WindowLayout style={{
+			backgroundColor: "rgb( 0 , 0 , 0 , 0.6 )"
+		}}>
+			<CenterLayout width="60%" height="15rem">
+				<div className="component border" style={{ backgroundColor: "white", height: "100%", padding: "1rem" }}>
 					{content}
 					<div style={{
 						position: "absolute",
@@ -56,8 +40,8 @@ const Alert: React.FunctionComponent<Props> = ({ content, alertActions, actions 
 						</button>)}
 					</div>
 				</div>
-			</Box>
-		</div>
+			</CenterLayout>
+		</WindowLayout>
 	);
 };
 
