@@ -7,14 +7,11 @@ import {
 	getResourceCalcProgress,
 	isResourcesSectionCollapsed,
 	isEditingItems,
-	isOnlyShowingChangedResources,
-
 } from "store/application/selectors";
 import { setItemFilter } from "store/setting/actions";
 import { getItemFilter } from "store/setting/selectors";
 import {
 	setEditingItems,
-	setShowOnlyChangedResources,
 	setResourcesCollapsed,
 } from "store/application/actions";
 import { connect, ConnectedProps } from "react-redux";
@@ -22,6 +19,14 @@ import {
 	getTotalActionCount,
 	getActiveActionName,
 } from "store/routing/selectors";
+import {
+	shouldOnlyShowChangedItem,
+	shouldHideEmptyItems,
+} from "store/setting/selectors";
+import {
+	setOnlyShowChangedItems,
+	setHideEmptyItems,
+} from "store/setting/actions";
 import React from "react";
 import ExpandButton from "components/ExpandButton";
 import { BoxLayout, SplitLayout } from "components/Layout";
@@ -38,15 +43,17 @@ const mapStateToProps = (state: ReduxGlobalState) => ({
 	total: getTotalActionCount(state),
 	error: getResourceCalcError(state),
 	filterString: getItemFilter(state),
-	onlyShowChanging: isOnlyShowingChangedResources(state),
+	onlyShowChanging: shouldOnlyShowChangedItem(state),
+	hideEmpty: shouldHideEmptyItems(state),
 });
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
 	actions: bindActionCreators({
 		setEditingItems,
 		setItemFilter,
-		setShowOnlyChangedResources,
+		setOnlyShowChangedItems,
 		setResourcesCollapsed,
+		setHideEmptyItems,
 	}, dispatch)
 });
 
@@ -55,11 +62,10 @@ const connector = connect(mapStateToProps, mapDispatchToProps);
 type Props = ConnectedProps<typeof connector> & ExternalProps;
 
 const Items: React.FunctionComponent<Props> = ({
-	resourcesCollapsed, editing, actions, appActions, filterString, progress, total, error, onlyShowChanging, activeActionName
+	resourcesCollapsed, editing, actions, appActions, filterString, progress, total, error, onlyShowChanging, activeActionName, hideEmpty
 }: Props) => {
-	const collapsed = resourcesCollapsed;
 	const expandButton = <ExpandButton
-		expanded={!collapsed} setExpanded={(expanded) => actions.setResourcesCollapsed({ collapsed: !expanded })}
+		expanded={!resourcesCollapsed} setExpanded={(expanded) => actions.setResourcesCollapsed({ collapsed: !expanded })}
 	/>;
 	const buttonSection =
 		<>
@@ -73,16 +79,27 @@ const Items: React.FunctionComponent<Props> = ({
 				onChange={(e) => actions.setItemFilter({ filter: e.target.value })}
 			/>
 			<button className="space-left-small icon-button" title="Clear" onClick={() => actions.setItemFilter({ filter: "" })}>X</button>
-			{activeActionName && <>
+			{activeActionName !== undefined && <>
 				<input
 					id="show_only_changed_checkbox"
 					className="space-left-small"
 					type="checkbox"
 					checked={onlyShowChanging}
 					onChange={(e) => {
-						actions.setShowOnlyChangedResources({ showOnlyChangedResources: e.target.checked });
+						actions.setOnlyShowChangedItems({ showOnlyChanged: e.target.checked });
 					}} />
-				<label htmlFor="show_only_changed_checkbox">Show Only Changed</label></>
+				<label htmlFor="show_only_changed_checkbox">Show Only Changed</label>
+				<input
+					id="hide_empty_checkbox"
+					className="space-left-small"
+					type="checkbox"
+					checked={hideEmpty}
+					onChange={(e) => {
+						actions.setHideEmptyItems({ hideEmpty: e.target.checked });
+					}} />
+				<label htmlFor="hide_empty_checkbox">Hide Empty</label>
+			</>
+
 			}
 		</>;
 

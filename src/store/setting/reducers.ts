@@ -11,5 +11,11 @@ export default {
 	},
 	setAutoSaveEnabled(state: ReduxGlobalState, action: PayloadAction<{ enabled: boolean }>): void {
 		state.settingState.autoSave = action.payload.enabled;
-	}
+	},
+	setOnlyShowChangedItems(state: ReduxGlobalState, action: PayloadAction<{ showOnlyChanged: boolean }>): void {
+		state.settingState.onlyShowChangedItems = action.payload.showOnlyChanged;
+	},
+	setHideEmptyItems(state: ReduxGlobalState, action: PayloadAction<{ hideEmpty: boolean }>): void {
+		state.settingState.hideEmptyItems = action.payload.hideEmpty;
+	},
 };

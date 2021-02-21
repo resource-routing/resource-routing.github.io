@@ -64,10 +64,6 @@ export function getActionResource(state: ReduxGlobalState, branchIndex: number, 
 	return getActionResourceByGlobalIndex(state, getGlobalActionIndex(state, branchIndex, splitIndex, actionIndex));
 }
 
-export function isOnlyShowingChangedResources(state: ReduxGlobalState): boolean {
-	return getApplicationState(state).showOnlyChangedResources;
-}
-
 export function isShowingHelp(state: ReduxGlobalState): boolean {
 	return getApplicationState(state).showHelp;
 }

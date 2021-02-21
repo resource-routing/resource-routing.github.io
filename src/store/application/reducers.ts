@@ -69,9 +69,6 @@ export default {
 		const globalIndex = getGlobalActionIndex(state, branchIndex, splitIndex, 0);
 		markResourceDirty(state, globalIndex);
 	},
-	setShowOnlyChangedResources(state: ReduxGlobalState, action: PayloadAction<{ showOnlyChangedResources: boolean }>): void {
-		state.applicationState.showOnlyChangedResources = action.payload.showOnlyChangedResources;
-	},
 	setShowingHelp(state: ReduxGlobalState, action: PayloadAction<{ showHelp: boolean }>): void {
 		state.applicationState.showHelp = action.payload.showHelp;
 	}

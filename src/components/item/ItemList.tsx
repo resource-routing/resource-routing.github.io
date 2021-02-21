@@ -9,7 +9,14 @@ import {
 } from "store/routing/selectors";
 import { ReduxGlobalState } from "store/store";
 import { getItemFilter } from "store/setting/selectors";
-import { getActionResourceByGlobalIndex, isEditingItems, isOnlyShowingChangedResources } from "store/application/selectors";
+import {
+	getActionResourceByGlobalIndex,
+	isEditingItems
+} from "store/application/selectors";
+import {
+	shouldOnlyShowChangedItem,
+	shouldHideEmptyItems,
+} from "store/setting/selectors";
 import { bindActionCreators, Dispatch } from "@reduxjs/toolkit";
 import { connect, ConnectedProps } from "react-redux";
 import { ITEM_LIMIT } from "data/limit";
@@ -31,11 +38,19 @@ const mapStateToProps = (state: ReduxGlobalState) => {
 	const deltas = globalIndex !== undefined ? getActionResourceByGlobalIndex(state, globalIndex) : undefined;
 
 	let filteredIndices = getFilteredItemIndices(state, filter);
-	const showOnlyChanged = isOnlyShowingChangedResources(state);
+	const showOnlyChanged = shouldOnlyShowChangedItem(state);
+
 	if (showOnlyChanged && deltas && Object.keys(deltas).length !== 0) {
 		filteredIndices = filteredIndices.filter(i => {
 			const name = getItemNameByIndex(state, i);
 			return name in deltas && deltas[name].change !== 0;
+		});
+	}
+	const hideEmpty = shouldHideEmptyItems(state);
+	if (hideEmpty && deltas && Object.keys(deltas).length !== 0) {
+		filteredIndices = filteredIndices.filter(i => {
+			const name = getItemNameByIndex(state, i);
+			return name in deltas && deltas[name].value !== 0;
 		});
 	}
 

@@ -46,7 +46,7 @@
 }
 
 .action-name-width{
-  width:10rem;
+  width:15rem;
 }
 
 input.full-width {
@@ -104,5 +104,9 @@ p{
 .action-note-spacer{
   height: 0.5rem;
   width: 100%;
+}
+
+.cursor-pointer{
+  cursor: pointer
 }
 

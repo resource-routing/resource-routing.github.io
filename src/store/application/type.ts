@@ -13,5 +13,4 @@ export type ApplicationState = {
 	editingActions: boolean,
 	splitClipboard: RouteSplit | undefined,
 	resources: RouteResources,
-	showOnlyChangedResources: boolean,
 }

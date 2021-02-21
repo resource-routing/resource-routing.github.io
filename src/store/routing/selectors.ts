@@ -26,8 +26,17 @@ export function getActiveGlobalIndex(state: ReduxGlobalState): number | undefine
 	const branch = getActiveBranch(state);
 	const split = getActiveSplit(state);
 	const action = getActiveAction(state);
-	if (branch >= 0 && split >= 0 && action >= 0) {
-		return getGlobalActionIndex(state, branch, split, action);
+	if (branch >= 0 && split >= 0) {
+		let activeAction = action;
+		if (activeAction < 0) {
+			const count = getActionCount(state, branch, split);
+			if (count > 0) {
+				activeAction = count - 1;
+			}
+		}
+		if (activeAction >= 0) {
+			return getGlobalActionIndex(state, branch, split, activeAction);
+		}
 	}
 	return undefined;
 }

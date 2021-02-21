@@ -4,32 +4,14 @@ import {
 	getActiveSplitActionDeltas,
 	getItemColorByName,
 } from "store/routing/selectors";
+import {
+	setItemFilter
+} from "store/setting/actions";
 import { DeltaType, typeToOperator } from "data/delta";
 import { getForegroundAndBackground } from "util/color";
 import { ReduxGlobalState } from "store/store";
 import React from "react";
-
-type RenderProps = {
-	name: string,
-	type: DeltaType,
-	value: number | string,
-	foreground: string,
-	background: string,
-}
-
-const DeltaItemRender: React.FunctionComponent<RenderProps> = ({ name, type, value, foreground, background }) => {
-	const displayName = name;
-	const [op, displayValue] = typeToOperator(type, value);
-	let displayValueRef;
-	if (type.startsWith("ref")) {
-		displayValueRef = `[${displayValue}]`;
-	} else {
-		displayValueRef = displayValue;
-	}
-	return (
-		<><span style={{ backgroundColor: background, color: foreground }}>[{displayName}]</span>{op}{displayValueRef}</>
-	);
-};
+import { bindActionCreators, Dispatch } from "@reduxjs/toolkit";
 
 const mapStateToPropsForDeltaItemRender = (state: ReduxGlobalState, ownProps: { name: string }) => {
 	const color = getItemColorByName(state, ownProps.name) ?? "";
@@ -39,7 +21,39 @@ const mapStateToPropsForDeltaItemRender = (state: ReduxGlobalState, ownProps: { 
 	};
 };
 
-const DeltaItem = connect(mapStateToPropsForDeltaItemRender)(DeltaItemRender);
+const mapDispatchToPropsForDeltaItemRender = (dispatch: Dispatch) => ({
+	actions: bindActionCreators({
+		setItemFilter
+	}, dispatch)
+});
+
+const connectorForDeltaItemRender = connect(mapStateToPropsForDeltaItemRender, mapDispatchToPropsForDeltaItemRender);
+
+type RenderProps = {
+	name: string,
+	type: DeltaType,
+	value: number | string,
+	foreground: string,
+	background: string,
+} & ConnectedProps<typeof connectorForDeltaItemRender>
+
+const DeltaItemRender: React.FunctionComponent<RenderProps> = ({ name, type, value, foreground, background, actions }) => {
+	const displayName = name;
+	const [op, displayValue] = typeToOperator(type, value);
+	let displayValueRef;
+	if (type.startsWith("ref")) {
+		displayValueRef = `[${displayValue}]`;
+	} else {
+		displayValueRef = displayValue;
+	}
+	return (
+		<><span className="cursor-pointer" style={{ backgroundColor: background, color: foreground }} onClick={() => {
+			actions.setItemFilter({ filter: name });
+		}}>[{displayName}]</span>{op}{displayValueRef}</>
+	);
+};
+
+const DeltaItem = connectorForDeltaItemRender(DeltaItemRender);
 
 type ExternalProps = {
 	actionIndex: number

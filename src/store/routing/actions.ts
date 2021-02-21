@@ -13,6 +13,7 @@ export const {
 	breakBranchAt,
 	createSplit,
 	setSplitName,
+	setActiveSplitName,
 	setSplitExpanded,
 	deleteSplit,
 	swapSplits,
@@ -32,4 +33,5 @@ export const {
 	setProjectName,
 	reparseAllDeltaStrings,
 	changeActiveSplit,
+	collapseAll,
 } = actions;

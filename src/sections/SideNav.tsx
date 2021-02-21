@@ -9,6 +9,9 @@ import {
 	setSideCollapsed,
 	setEditingNav
 } from "store/application/actions";
+import {
+	collapseAll
+} from "store/routing/actions";
 import { bindActionCreators, Dispatch } from "@reduxjs/toolkit";
 import { AppAction } from "App";
 import { ReduxGlobalState } from "store/store";
@@ -26,7 +29,8 @@ const mapStateToProps = (state: ReduxGlobalState) => ({
 const mapDispatchToProps = (dispatch: Dispatch) => ({
 	actions: bindActionCreators({
 		setSideCollapsed,
-		setEditingNav
+		setEditingNav,
+		collapseAll,
 	}, dispatch)
 });
 
@@ -43,7 +47,7 @@ export const SideNav: React.FunctionComponent<Props> = ({
 	const buttonSection =
 		<span>
 			<button className="space-left-small" onClick={() => actions.setEditingNav({ editing: !editing })} >{editing ? "Finish" : "Edit"}</button>
-			<button className="space-left-small" disabled >Collapse All</button>
+			<button className="space-left-small" onClick={() => actions.collapseAll()} >Collapse All</button>
 		</span>;
 
 	return (

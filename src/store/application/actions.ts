@@ -13,6 +13,5 @@ export const {
 	setResourceError,
 	markResourceDirtyAt,
 	markResourceDirtyAtSplit,
-	setShowOnlyChangedResources,
 	setShowingHelp,
 } = actions;

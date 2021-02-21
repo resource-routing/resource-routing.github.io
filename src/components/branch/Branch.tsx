@@ -65,20 +65,22 @@ export const Branch: React.FunctionComponent<Props> = ({ index, name, expanded, 
 			}} />
 		</td>;
 	let branchNode;
+	const nameField =
+		<input
+			className="full-width"
+			placeholder="Branch Name"
+			type="text"
+			value={name}
+			onChange={(e) => {
+				actions.setBranchName({ branchIndex: index, name: e.target.value });
+			}}
+		/>;
 	if (editing && !expanded) {
 		branchNode =
 			<tr>
 				{expandButtonCell}
 				<td colSpan={6}>
-					<input
-						className="full-width"
-						placeholder="Branch Name"
-						type="text"
-						value={name}
-						onChange={(e) => {
-							actions.setBranchName({ branchIndex: index, name: e.target.value });
-						}}
-					/>
+					{nameField}
 				</td>
 				<td className="icon-button-width">
 					{!isFirst &&
@@ -146,12 +148,23 @@ export const Branch: React.FunctionComponent<Props> = ({ index, name, expanded, 
 					}}>*</button>
 				</td>
 			</tr>;
+	} else if (editing) {
+		branchNode =
+			<tr>
+				{expandButtonCell}
+				<td colSpan={6}>
+					{nameField}
+				</td>
+				<td colSpan={4}>
+					<em>collapse to edit</em>
+				</td>
+			</tr>;
 	} else {
 		branchNode =
 			<tr>
 				{expandButtonCell}
 				<td colSpan={10}>
-					<strong>{displayName}</strong> {editing && <em>collapse to edit</em>}
+					<strong>{displayName}</strong>
 				</td>
 			</tr>;
 	}

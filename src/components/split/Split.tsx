@@ -7,6 +7,7 @@ import {
 	getSplitName,
 	isSplitExpanded,
 	getSplit,
+	getActionCount,
 } from "store/routing/selectors";
 import { isEditingNav } from "store/application/selectors";
 import {
@@ -49,6 +50,7 @@ const mapStateToProps = (state: ReduxGlobalState, { branchIndex, splitIndex }: E
 	copiedSplit: getSplitClipboard(state),
 	splitToCopy: getSplit(state, branchIndex, splitIndex),
 	splitCount: getSplitCount(state, branchIndex),
+	actionInSplitCount: getActionCount(state, branchIndex, splitIndex),
 });
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
@@ -76,7 +78,7 @@ const connector = connect(mapStateToProps, mapDispatchToProps);
 type Props = ConnectedProps<typeof connector> & ExternalProps;
 
 export const Split: React.FunctionComponent<Props> = ({
-	branchIndex, splitIndex, name, expanded, isLastBranch, editing, actions, appActions, copiedSplit, splitToCopy, splitCount,
+	branchIndex, splitIndex, name, expanded, isLastBranch, editing, actions, appActions, copiedSplit, splitToCopy, splitCount, actionInSplitCount,
 }: Props) => {
 	const isLast = splitIndex === splitCount - 1;
 	const isFirstBranch = branchIndex === 0;
@@ -84,9 +86,12 @@ export const Split: React.FunctionComponent<Props> = ({
 	const displayName = name || "[Unnamed Split]";
 	const expandButtonCell =
 		<td className="icon-button-width">
-			<ExpandButton expanded={expanded} setExpanded={(expanded: boolean) => {
-				actions.setSplitExpanded({ branchIndex, splitIndex, expanded });
-			}} />
+			{actionInSplitCount > 0 &&
+				<ExpandButton expanded={expanded} setExpanded={(expanded: boolean) => {
+					actions.setSplitExpanded({ branchIndex, splitIndex, expanded });
+				}} />
+			}
+
 		</td>;
 	const handleCreateSplit = (templateSplit?: RouteSplit) => {
 		if (splitCount >= SPLIT_LIMIT) {

@@ -143,7 +143,7 @@ const ItemEdit: React.FunctionComponent<Props> = ({ name, color, foreground, bac
 			<td>
 				<input
 					className="full-width"
-					placeholder={name || "[Unnamed]"}
+					placeholder={name || "Unnamed"}
 					type="text"
 					value={renamed}
 					onChange={(e) => {

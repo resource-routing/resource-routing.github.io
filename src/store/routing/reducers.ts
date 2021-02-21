@@ -197,6 +197,15 @@ export default {
 		const { branchIndex, splitIndex, name } = action.payload;
 		state.routeState.branches[branchIndex].splits[splitIndex].name = name;
 	},
+	setActiveSplitName(state: ReduxGlobalState, action: PayloadAction<{ name: string }>): void {
+		const branchIndex = getActiveBranch(state);
+		const splitIndex = getActiveSplit(state);
+		if (!validateSplit(state, branchIndex, splitIndex)) {
+			return;
+		}
+		const { name } = action.payload;
+		state.routeState.branches[branchIndex].splits[splitIndex].name = name;
+	},
 	setSplitExpanded(state: ReduxGlobalState, action: PayloadAction<{ branchIndex: number, splitIndex: number, expanded: boolean }>): void {
 		const { branchIndex, splitIndex, expanded } = action.payload;
 		state.routeState.branches[branchIndex].splits[splitIndex].expanded = expanded;
@@ -496,5 +505,13 @@ export default {
 		state.routeState.activeBranch = changedBranch;
 		state.routeState.activeSplit = changedSplit;
 		state.routeState.activeAction = -1;
+	},
+	collapseAll(state: ReduxGlobalState): void {
+		state.routeState.branches.forEach(b => {
+			b.splits.forEach(s => {
+				s.expanded = false;
+			});
+			b.expanded = false;
+		});
 	}
 };

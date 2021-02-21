@@ -11,6 +11,7 @@ export default {
 	settingState: {
 		autoSave: true,
 		onlyShowChangedItems: false,
+		hideEmptyItems: true,
 		itemFilter: "",
 	},
 	applicationState: {

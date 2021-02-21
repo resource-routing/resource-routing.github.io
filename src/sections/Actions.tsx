@@ -14,6 +14,7 @@ import {
 } from "store/application/actions";
 import {
 	changeActiveSplit,
+	setActiveSplitName,
 } from "store/routing/actions";
 import { BoxLayout, SplitLayout } from "components/Layout";
 
@@ -31,6 +32,7 @@ const mapDispatchToProps = (dispatch: Dispatch) => ({
 	actions: bindActionCreators({
 		setEditingActions,
 		changeActiveSplit,
+		setActiveSplitName,
 	}, dispatch)
 });
 
@@ -57,10 +59,25 @@ export const Actions: React.FunctionComponent<Props> = ({
 			}}>Next Split</button>
 		</span>;
 
+	let splitNameSection = undefined;
+	if (splitName !== undefined && editing) {
+		splitNameSection =
+			<input
+				type="text"
+				placeholder="Split Name"
+				value={splitName}
+				onChange={(e) => {
+					actions.setActiveSplitName({ name: e.target.value });
+				}}
+			/>;
+	} else {
+		splitNameSection = splitName && " - " + splitName;
+	}
+
 	return (
 		<SplitLayout size="2rem" className="component border">
 			<BoxLayout className="component header-border">
-				<strong> Split Detail {splitName && " - " + splitName}</strong>
+				<strong> Split Detail {splitNameSection}</strong>
 				{buttonSection}
 			</BoxLayout>
 			<BoxLayout className="overflow-auto">
