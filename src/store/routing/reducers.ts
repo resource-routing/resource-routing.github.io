@@ -506,12 +506,13 @@ export default {
 		state.routeState.activeSplit = changedSplit;
 		state.routeState.activeAction = -1;
 	},
-	collapseAll(state: ReduxGlobalState): void {
+	setAllCollapsed(state: ReduxGlobalState, action: PayloadAction<{ collapsed: boolean }>): void {
+		const expanded = !action.payload.collapsed;
 		state.routeState.branches.forEach(b => {
 			b.splits.forEach(s => {
-				s.expanded = false;
+				s.expanded = expanded;
 			});
-			b.expanded = false;
+			b.expanded = expanded;
 		});
 	}
 };

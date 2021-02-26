@@ -33,5 +33,5 @@ export const {
 	setProjectName,
 	reparseAllDeltaStrings,
 	changeActiveSplit,
-	collapseAll,
+	setAllCollapsed,
 } = actions;
